@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个性简历卡</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#36CFC9',
+                        neutral: '#F5F7FA',
+                        dark: '#1D2129',
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .card-shadow {
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
+            }
+            .upload-area {
+                @apply relative border-2 border-dashed border-gray-300 rounded-lg p-6 text-center transition-all duration-300;
+            }
+            .upload-area:hover {
+                @apply border-primary bg-primary/5;
+            }
+            .upload-area.active {
+                @apply border-secondary bg-secondary/5;
+            }
+            .photo-frame {
+                @apply relative rounded-lg overflow-hidden border-2 border-white shadow-md transition-transform duration-300;
+            }
+            .photo-frame:hover {
+                @apply transform scale-[1.02];
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen font-inter text-dark">
+    <div class="container mx-auto px-4 py-12 max-w-5xl">
+        <!-- 页面标题 -->
+        <h1 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-center mb-8 text-primary">
+            <i class="fa fa-id-card-o mr-2"></i>个性简历卡生成器
+        </h1>
+
+        <!-- 简历卡主体 -->
+        <div class="bg-white rounded-2xl card-shadow overflow-hidden transition-all duration-500 hover:shadow-xl">
+            <!-- 简历卡头部 -->
+            <div class="bg-gradient-to-r from-primary to-primary/80 text-white p-6 md:p-8 relative">
+                <h2 id="resume-title" class="text-[clamp(1.5rem,3vw,2rem)] font-bold mb-2">某某简历</h2>
+                <p id="resume-subtitle" class="text-white/80 text-lg">专业技能与个人风采展示</p>
+                
+                <!-- 右上角证件照 -->
+                <div class="absolute top-6 right-6 md:top-8 md:right-8 w-24 h-24 md:w-32 md:h-32 rounded-lg overflow-hidden border-2 border-white shadow-lg transition-transform duration-300 hover:scale-105">
+                    <img id="id-photo" src="https://picsum.photos/seed/idphoto/200/250" alt="证件照" class="w-full h-full object-cover">
+                    <label for="id-photo-upload" class="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-center justify-center cursor-pointer">
+                        <span class="text-white text-sm"><i class="fa fa-camera mr-1"></i>更换</span>
+                    </label>
+                    <input type="file" id="id-photo-upload" accept="image/*" class="hidden" />
+                </div>
+            </div>
+
+            <!-- 简历卡内容区域 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 p-6 md:p-8">
+                <!-- 左侧区域 - 三个上传区域 -->
+                <div class="md:col-span-2 space-y-6">
+                    <!-- 个人风采照片上传 -->
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-semibold text-primary flex items-center">
+                            <i class="fa fa-user-circle-o mr-2"></i>个人风采
+                        </h3>
+                        <div class="grid grid-cols-1 gap-4">
+                            <div class="photo-frame" id="photo-1-frame">
+                                <img id="photo-1" src="https://picsum.photos/seed/photo1/800/400" alt="个人风采照片1" class="w-full h-64 object-cover">
+                                <label for="photo-1-upload" class="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-center justify-center cursor-pointer">
+                                    <span class="text-white text-sm"><i class="fa fa-camera mr-1"></i>更换</span>
+                                </label>
+                                <input type="file" id="photo-1-upload" accept="image/*" class="hidden" />
+                            </div>
+                            <div class="photo-frame" id="photo-2-frame">
+                                <img id="photo-2" src="https://picsum.photos/seed/photo2/800/400" alt="个人风采照片2" class="w-full h-64 object-cover">
+                                <label for="photo-2-upload" class="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-center justify-center cursor-pointer">
+                                    <span class="text-white text-sm"><i class="fa fa-camera mr-1"></i>更换</span>
+                                </label>
+                                <input type="file" id="photo-2-upload" accept="image/*" class="hidden" />
+                            </div>
+                            <div class="photo-frame" id="photo-3-frame">
+                                <img id="photo-3" src="https://picsum.photos/seed/photo3/800/400" alt="个人风采照片3" class="w-full h-64 object-cover">
+                                <label for="photo-3-upload" class="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-center justify-center cursor-pointer">
+                                    <span class="text-white text-sm"><i class="fa fa-camera mr-1"></i>更换</span>
+                                </label>
+                                <input type="file" id="photo-3-upload" accept="image/*" class="hidden" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右侧区域 - 联名位置 -->
+                <div class="md:col-span-1 space-y-6">
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-semibold text-primary flex items-center">
+                            <i class="fa fa-handshake-o mr-2"></i>联名位置
+                        </h3>
+                        <!-- 修改联名位置为类似证件照的样式 -->
+                        <div class="photo-frame" id="collaboration-frame">
+                            <img id="collaboration-image" src="https://picsum.photos/seed/collab/600/200" alt="联名图片" class="w-full h-64 object-cover">
+                            <label for="collaboration-upload" class="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-center justify-center cursor-pointer">
+                                <span class="text-white text-sm"><i class="fa fa-camera mr-1"></i>更换</span>
+                            </label>
+                            <input type="file" id="collaboration-upload" accept="image/*" class="hidden" />
+                        </div>
+                    </div>
+
+                    <!-- 技能标签 -->
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-semibold text-primary flex items-center">
+                            <i class="fa fa-tags mr-2"></i>技能标签
+                        </h3>
+                        <div class="bg-neutral rounded-lg p-4">
+                            <div id="tags-container" class="flex flex-wrap gap-2 mb-3 min-h-[40px]">
+                                <span class="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm flex items-center">
+                                    HTML
+                                    <button type="button" class="ml-1 text-primary/70 hover:text-primary remove-tag">
+                                        <i class="fa fa-times-circle"></i>
+                                    </button>
+                                </span>
+                                <span class="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm flex items-center">
+                                    CSS
+                                    <button type="button" class="ml-1 text-primary/70 hover:text-primary remove-tag">
+                                        <i class="fa fa-times-circle"></i>
+                                    </button>
+                                </span>
+                                <span class="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm flex items-center">
+                                    JavaScript
+                                    <button type="button" class="ml-1 text-primary/70 hover:text-primary remove-tag">
+                                        <i class="fa fa-times-circle"></i>
+                                    </button>
+                                </span>
+                            </div>
+                            <div class="flex">
+                                <input type="text" id="tag-input" placeholder="添加技能标签..." class="flex-1 px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all">
+                                <button type="button" id="add-tag" class="px-4 py-2 bg-primary text-white rounded-r-md hover:bg-primary/90 transition-colors">
+                                    添加
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 简历卡底部 -->
+            <div class="bg-neutral p-6 flex justify-center">
+                <button type="button" id="generate-resume" class="px-6 py-3 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors shadow-md hover:shadow-lg transform hover:-translate-y-0.5 duration-300 flex items-center">
+                    <i class="fa fa-magic mr-2"></i>生成个性简历卡
+                </button>
+            </div>
+        </div>
+
+        <!-- 简历卡预览模态框 -->
+        <div id="preview-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 opacity-0 pointer-events-none transition-opacity duration-300">
+            <div class="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-auto transform scale-95 transition-transform duration-300">
+                <div class="flex justify-between items-center p-6 border-b">
+                    <h3 class="text-xl font-bold text-primary">简历卡预览</h3>
+                    <button id="close-modal" class="text-gray-500 hover:text-gray-700 transition-colors">
+                        <i class="fa fa-times text-xl"></i>
+                    </button>
+                </div>
+                <div class="p-6">
+                    <!-- 预览内容 -->
+                    <div id="resume-preview" class="border-2 border-gray-200 rounded-xl overflow-hidden shadow-lg mx-auto max-w-2xl transform transition-transform duration-500 hover:shadow-xl">
+                        <!-- 预览头部 -->
+                        <div class="bg-gradient-to-r from-primary to-primary/80 text-white p-6 relative">
+                            <h2 id="preview-title" class="text-2xl font-bold mb-2">某某简历</h2>
+                            <p id="preview-subtitle" class="text-white/80">专业技能与个人风采展示</p>
+                            
+                            <!-- 预览证件照 -->
+                            <div class="absolute top-6 right-6 w-32 h-40 rounded-lg overflow-hidden border-2 border-white shadow-lg">
+                                <img id="preview-id-photo" src="https://picsum.photos/seed/idphoto/200/250" alt="证件照" class="w-full h-full object-cover">
+                            </div>
+                        </div>
+                        
+                        <!-- 预览内容 -->
+                        <div class="p-6">
+                            <!-- 个人风采照片 -->
+                            <div class="mb-6">
+                                <h3 class="text-lg font-semibold text-primary mb-3 flex items-center">
+                                    <i class="fa fa-user-circle-o mr-2"></i>个人风采
+                                </h3>
+                                <div class="space-y-4">
+                                    <img id="preview-photo-1" src="https://picsum.photos/seed/photo1/800/400" alt="个人风采照片1" class="w-full h-64 object-cover rounded-lg shadow-sm">
+                                    <img id="preview-photo-2" src="https://picsum.photos/seed/photo2/800/400" alt="个人风采照片2" class="w-full h-64 object-cover rounded-lg shadow-sm">
+                                    <img id="preview-photo-3" src="https://picsum.photos/seed/photo3/800/400" alt="个人风采照片3" class="w-full h-64 object-cover rounded-lg shadow-sm">
+                                </div>
+                            </div>
+                            
+                            <!-- 技能标签 -->
+                            <div class="mb-6">
+                                <h3 class="text-lg font-semibold text-primary mb-3 flex items-center">
+                                    <i class="fa fa-tags mr-2"></i>技能标签
+                                </h3>
+                                <div id="preview-tags" class="flex flex-wrap gap-2">
+                                    <span class="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm">HTML</span>
+                                    <span class="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm">CSS</span>
+                                    <span class="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm">JavaScript</span>
+                                </div>
+                            </div>
+                            
+                            <!-- 联名位置 -->
+                            <div>
+                                <h3 class="text-lg font-semibold text-primary mb-3 flex items-center">
+                                    <i class="fa fa-handshake-o mr-2"></i>联名位置
+                                </h3>
+                                <div class="rounded-lg overflow-hidden">
+                                    <img id="preview-collaboration" src="https://picsum.photos/seed/collab/600/200" alt="联名图片" class="w-full h-32 object-cover rounded-lg">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-end p-6 border-t">
+                    <button id="download-resume" class="px-6 py-3 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors shadow-md hover:shadow-lg transform hover:-translate-y-0.5 duration-300 flex items-center">
+                        <i class="fa fa-download mr-2"></i>下载简历卡
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 图片上传功能
+            const uploadInputs = document.querySelectorAll('input[type="file"]');
+            uploadInputs.forEach(input => {
+                input.addEventListener('change', function(e) {
+                    if (this.files && this.files[0]) {
+                        const reader = new FileReader();
+                        const targetId = this.id.replace('-upload', '');
+                        const targetImg = document.getElementById(targetId);
+                        
+                        reader.onload = function(e) {
+                            targetImg.src = e.target.result;
+                            
+                            // 更新预览图
+                            const previewId = 'preview-' + targetId;
+                            const previewImg = document.getElementById(previewId);
+                            if (previewImg) {
+                                previewImg.src = e.target.result;
+                            }
+                        }
+                        
+                        reader.readAsDataURL(this.files[0]);
+                    }
+                });
+            });
+            
+            // 添加技能标签
+            const tagInput = document.getElementById('tag-input');
+            const addTagBtn = document.getElementById('add-tag');
+            const tagsContainer = document.getElementById('tags-container');
+            const previewTags = document.getElementById('preview-tags');
+            
+            addTagBtn.addEventListener('click', addTag);
+            tagInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addTag();
+                }
+            });
+            
+            function addTag() {
+                const tagName = tagInput.value.trim();
+                if (tagName && !isTagExists(tagName)) {
+                    // 添加到标签容器
+                    const tagElement = document.createElement('span');
+                    tagElement.className = 'bg-primary/10 text-primary px-3 py-1 rounded-full text-sm flex items-center animate-fadeIn';
+                    tagElement.innerHTML = `${tagName}
+                        <button type="button" class="ml-1 text-primary/70 hover:text-primary remove-tag">
+                            <i class="fa fa-times-circle"></i>
+                        </button>`;
+                    tagsContainer.appendChild(tagElement);
+                    
+                    // 添加到预览
+                    const previewTag = document.createElement('span');
+                    previewTag.className = 'bg-primary/10 text-primary px-3 py-1 rounded-full text-sm animate-fadeIn';
+                    previewTag.textContent = tagName;
+                    previewTag.dataset.tag = tagName;
+                    previewTags.appendChild(previewTag);
+                    
+                    // 清空输入框
+                    tagInput.value = '';
+                    
+                    // 添加删除事件
+                    tagElement.querySelector('.remove-tag').addEventListener('click', function() {
+                        const tagText = this.parentElement.textContent.trim();
+                        tagsContainer.removeChild(this.parentElement);
+                        
+                        // 从预览中删除
+                        const previewTag = previewTags.querySelector(`[data-tag="${tagText}"]`);
+                        if (previewTag) {
+                            previewTags.removeChild(previewTag);
+                        }
+                    });
+                }
+            }
+            
+            function isTagExists(tagName) {
+                const existingTags = tagsContainer.querySelectorAll('span');
+                for (let tag of existingTags) {
+                    if (tag.textContent.trim().includes(tagName)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            
+            // 现有标签的删除功能
+            document.querySelectorAll('.remove-tag').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const tagText = this.parentElement.textContent.trim();
+                    tagsContainer.removeChild(this.parentElement);
+                    
+                    // 从预览中删除
+                    const previewTag = previewTags.querySelector(`[data-tag="${tagText}"]`);
+                    if (previewTag) {
+                        previewTags.removeChild(previewTag);
+                    }
+                });
+            });
+            
+            // 生成简历卡
+            const generateBtn = document.getElementById('generate-resume');
+            const previewModal = document.getElementById('preview-modal');
+            const closeModalBtn = document.getElementById('close-modal');
+            
+            generateBtn.addEventListener('click', function() {
+                // 更新预览内容
+                document.getElementById('preview-title').textContent = document.getElementById('name').value || '某某简历';
+                
+                // 更新所有预览图片
+                document.getElementById('preview-id-photo').src = document.getElementById('id-photo').src;
+                document.getElementById('preview-photo-1').src = document.getElementById('photo-1').src;
+                document.getElementById('preview-photo-2').src = document.getElementById('photo-2').src;
+                document.getElementById('preview-photo-3').src = document.getElementById('photo-3').src;
+                document.getElementById('preview-collaboration').src = document.getElementById('collaboration-image').src;
+                
+                // 更新技能标签
+                updatePreviewTags();
+                
+                // 显示模态框
+                previewModal.classList.remove('opacity-0', 'pointer-events-none');
+                previewModal.querySelector('div').classList.remove('scale-95');
+                previewModal.querySelector('div').classList.add('scale-100');
+                
+                // 阻止背景滚动
+                document.body.style.overflow = 'hidden';
+            });
+            
+            // 更新预览中的技能标签
+            function updatePreviewTags() {
+                const previewTags = document.getElementById('preview-tags');
+                const currentTags = document.getElementById('tags-container').querySelectorAll('span');
+                
+                // 清空预览标签容器
+                previewTags.innerHTML = '';
+                
+                // 添加所有当前标签到预览
+                currentTags.forEach(tag => {
+                    const tagText = tag.textContent.trim().replace('×', '').trim();
+                    const previewTag = document.createElement('span');
+                    previewTag.className = 'bg-primary/10 text-primary px-3 py-1 rounded-full text-sm animate-fadeIn';
+                    previewTag.textContent = tagText;
+                    previewTag.dataset.tag = tagText;
+                    previewTags.appendChild(previewTag);
+                });
+            }
+            
+            closeModalBtn.addEventListener('click', function() {
+                // 隐藏模态框
+                previewModal.classList.add('opacity-0', 'pointer-events-none');
+                previewModal.querySelector('div').classList.remove('scale-100');
+                previewModal.querySelector('div').classList.add('scale-95');
+                
+                // 恢复背景滚动
+                document.body.style.overflow = '';
+            });
+            
+            // 点击模态框背景关闭
+            previewModal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModalBtn.click();
+                }
+            });
+            
+            // 下载简历卡
+            document.getElementById('download-resume').addEventListener('click', function() {
+                alert('简历卡下载功能已触发！在实际应用中，这里会生成PDF或图片文件供下载。');
+            });
+            
+            // 添加淡入动画
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: translateY(10px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                .animate-fadeIn {
+                    animation: fadeIn 0.3s ease-out forwards;
+                }
+            `;
+            document.head.appendChild(style);
+        });
+    </script>
+</body>
+</html>
+    
