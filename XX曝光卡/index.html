@@ -18,6 +18,9 @@
                         accent: '#60A5FA',
                         neutral: '#F1F5F9',
                         'neutral-dark': '#334155',
+                        success: '#10B981',
+                        danger: '#EF4444',
+                        warning: '#F59E0B',
                     },
                     fontFamily: {
                         sans: ['Inter', 'system-ui', 'sans-serif'],
@@ -32,7 +35,7 @@
                 content-visibility: auto;
             }
             .photo-container {
-                aspect-ratio: 1/1;
+                aspect-ratio: 4/6;
             }
             .card-shadow {
                 box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
@@ -50,47 +53,83 @@
             .grid-container {
                 display: grid;
                 grid-template-columns: repeat(3, 1fr);
-                gap: 1rem;
+                gap: 1.5rem;
+            }
+            .btn-hover-effect {
+                transition: transform 0.2s, box-shadow 0.2s;
+            }
+            .btn-hover-effect:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .scale-on-hover {
+                transition: transform 0.3s ease;
+            }
+            .scale-on-hover:hover {
+                transform: scale(1.02);
             }
         }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen font-sans">
-    <!-- 页面头部 -->
-    <header class="bg-gradient-to-r from-primary to-secondary text-white shadow-lg">
-        <div class="container mx-auto px-4 py-6">
+    <!-- 顶部导航栏 -->
+    <header class="bg-gradient-to-r from-primary to-secondary text-white shadow-lg sticky top-0 z-50 transition-all duration-300">
+        <div class="container mx-auto px-4 py-4">
             <div class="flex justify-between items-center">
-                <div>
-                    <h1 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold tracking-tight">
-                        <i class="fa fa-eye mr-3"></i>XX曝光台
-                    </h1>
-                    <p class="text-blue-100 mt-1">真相在此，一目了然</p>
+                <div class="flex items-center">
+                    <i class="fa fa-eye text-2xl mr-3"></i>
+                    <h1 class="text-xl md:text-2xl font-bold tracking-tight">XX曝光台</h1>
                 </div>
-                <div class="hidden md:flex space-x-4">
-                    <button id="saveAsPDF" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-all duration-300 flex items-center">
+                <div class="hidden md:flex space-x-3">
+                    <button id="saveAsPDF" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-all duration-300 flex items-center btn-hover-effect">
                         <i class="fa fa-file-pdf-o mr-2"></i>保存为PDF
                     </button>
-                    <button id="saveAsImage" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-all duration-300 flex items-center">
+                    <button id="saveAsImage" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-all duration-300 flex items-center btn-hover-effect">
                         <i class="fa fa-file-image-o mr-2"></i>保存为图片
                     </button>
-                    <button id="resetAll" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-all duration-300 flex items-center">
+                    <button id="resetAll" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-all duration-300 flex items-center btn-hover-effect">
                         <i class="fa fa-refresh mr-2"></i>重置
                     </button>
                 </div>
+                <button class="md:hidden text-white text-xl" id="mobileMenuBtn">
+                    <i class="fa fa-bars"></i>
+                </button>
+            </div>
+            
+            <!-- 移动端菜单 -->
+            <div id="mobileMenu" class="md:hidden hidden mt-4 bg-white/10 rounded-lg p-3 space-y-2">
+                <button id="mobileSaveAsPDF" class="w-full bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-all duration-300 flex items-center justify-center btn-hover-effect">
+                    <i class="fa fa-file-pdf-o mr-2"></i>保存为PDF
+                </button>
+                <button id="mobileSaveAsImage" class="w-full bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-all duration-300 flex items-center justify-center btn-hover-effect">
+                    <i class="fa fa-file-image-o mr-2"></i>保存为图片
+                </button>
+                <button id="mobileResetAll" class="w-full bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-all duration-300 flex items-center justify-center btn-hover-effect">
+                    <i class="fa fa-refresh mr-2"></i>重置
+                </button>
             </div>
         </div>
     </header>
 
     <main class="container mx-auto px-4 py-8">
+        <!-- 页面标题和说明 -->
+        <div class="mb-8 text-center">
+            <h2 class="text-3xl font-bold text-neutral-dark mb-2">曝光内容管理</h2>
+            <p class="text-gray-600 max-w-2xl mx-auto">上传并管理曝光图片，添加签名后可导出为PDF或图片格式</p>
+        </div>
+        
         <!-- 曝光卡片区域 -->
-        <section class="bg-white rounded-2xl overflow-hidden card-shadow mb-8">
-            <div class="p-4">
-                <h2 class="text-xl font-semibold text-neutral-dark mb-4">图片区域</h2>
+        <section class="bg-white rounded-2xl overflow-hidden card-shadow mb-8 scale-on-hover">
+            <div class="p-6">
+                <h3 class="text-xl font-semibold text-neutral-dark mb-5 flex items-center">
+                    <i class="fa fa-picture-o text-primary mr-2"></i>图片区域
+                    <span class="ml-2 text-sm font-normal text-gray-500">(点击图片可上传替换)</span>
+                </h3>
                 <div class="grid-container">
                     <!-- 九宫格图片区域 -->
                     <div class="photo-wrapper relative">
-                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300">
-                            <img id="image1" src="https://picsum.photos/seed/photo1/300/300" alt="图片1" class="w-full h-full object-cover">
+                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
+                            <img id="image1" src="https://picsum.photos/seed/photo1/400/600" alt="图片1" class="w-full h-full object-cover">
                             <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
                                 <label for="input1" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-4 py-2 rounded-lg transition-all duration-300 flex items-center">
                                     <i class="fa fa-upload mr-2"></i>更换图片
@@ -101,8 +140,8 @@
                     </div>
                     
                     <div class="photo-wrapper relative">
-                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300">
-                            <img id="image2" src="https://picsum.photos/seed/photo2/300/300" alt="图片2" class="w-full h-full object-cover">
+                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
+                            <img id="image2" src="https://picsum.photos/seed/photo2/400/600" alt="图片2" class="w-full h-full object-cover">
                             <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
                                 <label for="input2" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-4 py-2 rounded-lg transition-all duration-300 flex items-center">
                                     <i class="fa fa-upload mr-2"></i>更换图片
@@ -113,8 +152,8 @@
                     </div>
                     
                     <div class="photo-wrapper relative">
-                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300">
-                            <img id="image3" src="https://picsum.photos/seed/photo3/300/300" alt="图片3" class="w-full h-full object-cover">
+                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
+                            <img id="image3" src="https://picsum.photos/seed/photo3/400/600" alt="图片3" class="w-full h-full object-cover">
                             <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
                                 <label for="input3" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-4 py-2 rounded-lg transition-all duration-300 flex items-center">
                                     <i class="fa fa-upload mr-2"></i>更换图片
@@ -125,8 +164,8 @@
                     </div>
                     
                     <div class="photo-wrapper relative">
-                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300">
-                            <img id="image4" src="https://picsum.photos/seed/photo4/300/300" alt="图片4" class="w-full h-full object-cover">
+                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
+                            <img id="image4" src="https://picsum.photos/seed/photo4/400/600" alt="图片4" class="w-full h-full object-cover">
                             <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
                                 <label for="input4" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-4 py-2 rounded-lg transition-all duration-300 flex items-center">
                                     <i class="fa fa-upload mr-2"></i>更换图片
@@ -137,8 +176,8 @@
                     </div>
                     
                     <div class="photo-wrapper relative">
-                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300">
-                            <img id="image5" src="https://picsum.photos/seed/photo5/300/300" alt="图片5" class="w-full h-full object-cover">
+                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
+                            <img id="image5" src="https://picsum.photos/seed/photo5/400/600" alt="图片5" class="w-full h-full object-cover">
                             <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
                                 <label for="input5" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-4 py-2 rounded-lg transition-all duration-300 flex items-center">
                                     <i class="fa fa-upload mr-2"></i>更换图片
@@ -149,8 +188,8 @@
                     </div>
                     
                     <div class="photo-wrapper relative">
-                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300">
-                            <img id="image6" src="https://picsum.photos/seed/photo6/300/300" alt="图片6" class="w-full h-full object-cover">
+                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
+                            <img id="image6" src="https://picsum.photos/seed/photo6/400/600" alt="图片6" class="w-full h-full object-cover">
                             <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
                                 <label for="input6" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-4 py-2 rounded-lg transition-all duration-300 flex items-center">
                                     <i class="fa fa-upload mr-2"></i>更换图片
@@ -161,8 +200,8 @@
                     </div>
                     
                     <div class="photo-wrapper relative">
-                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300">
-                            <img id="image7" src="https://picsum.photos/seed/photo7/300/300" alt="图片7" class="w-full h-full object-cover">
+                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
+                            <img id="image7" src="https://picsum.photos/seed/photo7/400/600" alt="图片7" class="w-full h-full object-cover">
                             <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
                                 <label for="input7" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-4 py-2 rounded-lg transition-all duration-300 flex items-center">
                                     <i class="fa fa-upload mr-2"></i>更换图片
@@ -173,8 +212,8 @@
                     </div>
                     
                     <div class="photo-wrapper relative">
-                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300">
-                            <img id="image8" src="https://picsum.photos/seed/photo8/300/300" alt="图片8" class="w-full h-full object-cover">
+                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
+                            <img id="image8" src="https://picsum.photos/seed/photo8/400/600" alt="图片8" class="w-full h-full object-cover">
                             <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
                                 <label for="input8" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-4 py-2 rounded-lg transition-all duration-300 flex items-center">
                                     <i class="fa fa-upload mr-2"></i>更换图片
@@ -185,8 +224,8 @@
                     </div>
                     
                     <div class="photo-wrapper relative">
-                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300">
-                            <img id="image9" src="https://picsum.photos/seed/photo9/300/300" alt="图片9" class="w-full h-full object-cover">
+                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
+                            <img id="image9" src="https://picsum.photos/seed/photo9/400/600" alt="图片9" class="w-full h-full object-cover">
                             <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
                                 <label for="input9" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-4 py-2 rounded-lg transition-all duration-300 flex items-center">
                                     <i class="fa fa-upload mr-2"></i>更换图片
@@ -199,44 +238,46 @@
             </div>
 
             <!-- 签名区域 -->
-            <div class="p-4 border-t border-gray-200">
-                <div class="flex flex-col md:flex-row md:items-center justify-between mb-3">
-                    <h2 class="text-lg font-semibold text-neutral-dark">签名区</h2>
-                    <div class="flex space-x-2 mt-2 md:mt-0">
-                        <button id="clearSignature" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center">
+            <div class="p-6 border-t border-gray-100">
+                <div class="flex flex-col md:flex-row md:items-center justify-between mb-4">
+                    <h3 class="text-xl font-semibold text-neutral-dark flex items-center">
+                        <i class="fa fa-signature text-primary mr-2"></i>签名区
+                        <span class="ml-2 text-sm font-normal text-gray-500">(使用鼠标或触摸屏幕签名)</span>
+                    </h3>
+                    <div class="flex space-x-3 mt-3 md:mt-0">
+                        <button id="clearSignature" class="bg-white border border-danger text-danger hover:bg-danger hover:text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center btn-hover-effect">
                             <i class="fa fa-eraser mr-2"></i>清除
                         </button>
-                        <button id="saveSignature" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center">
+                        <button id="saveSignature" class="bg-white border border-success text-success hover:bg-success hover:text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center btn-hover-effect">
                             <i class="fa fa-check mr-2"></i>保存
                         </button>
                     </div>
                 </div>
-                <div class="border-2 border-gray-300 rounded-xl p-2 bg-gray-50">
-                    <canvas id="signatureCanvas" class="w-full h-40 bg-white rounded-lg shadow-inner signature-pad" touch-action="none"></canvas>
-                    <p class="text-sm text-gray-500 mt-2 text-right">在此区域手写签名</p>
+                <div class="border-2 border-gray-200 rounded-xl p-2 bg-gray-50 shadow-inner">
+                    <canvas id="signatureCanvas" class="w-full h-52 bg-white rounded-lg signature-pad" touch-action="none"></canvas>
+                    <div class="flex justify-between items-center mt-2 px-2">
+                        <p class="text-sm text-gray-500">在此区域手写签名</p>
+                        <div class="flex space-x-2">
+                            <button id="undoSignature" class="text-gray-500 hover:text-primary transition-colors">
+                                <i class="fa fa-undo"></i> 撤销
+                            </button>
+                            <button id="redoSignature" class="text-gray-500 hover:text-primary transition-colors">
+                                <i class="fa fa-repeat"></i> 重做
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
-
-        <!-- 移动端按钮 -->
-        <div class="md:hidden flex flex-wrap justify-center gap-3 mb-8">
-            <button id="mobileSaveAsPDF" class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center">
-                <i class="fa fa-file-pdf-o mr-2"></i>保存为PDF
-            </button>
-            <button id="mobileSaveAsImage" class="bg-secondary hover:bg-secondary/90 text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center">
-                <i class="fa fa-file-image-o mr-2"></i>保存为图片
-            </button>
-            <button id="mobileResetAll" class="bg-neutral-dark hover:bg-neutral-dark/90 text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center">
-                <i class="fa fa-refresh mr-2"></i>重置
-            </button>
-        </div>
     </main>
 
     <footer class="bg-gray-800 text-white py-8">
         <div class="container mx-auto px-4">
             <div class="flex flex-col md:flex-row justify-between items-center">
                 <div class="mb-4 md:mb-0">
-                    <h2 class="text-xl font-bold">XX曝光台</h2>
+                    <h2 class="text-xl font-bold flex items-center">
+                        <i class="fa fa-eye mr-2"></i>XX曝光台
+                    </h2>
                     <p class="text-gray-400 mt-1">真相在此，一目了然</p>
                 </div>
                 <div class="flex space-x-6">
@@ -276,6 +317,9 @@
             let isDrawing = false;
             let lastX = 0;
             let lastY = 0;
+            let paths = [];
+            let currentPath = [];
+            let undoStack = [];
             
             // 设置Canvas尺寸
             function resizeCanvas() {
@@ -285,7 +329,20 @@
                 canvas.width = width * dpr;
                 canvas.height = height * dpr;
                 ctx.scale(dpr, dpr);
-                ctx.clearRect(0, 0, width, height);
+                redrawCanvas();
+            }
+            
+            // 重绘Canvas
+            function redrawCanvas() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                paths.forEach(path => {
+                    ctx.beginPath();
+                    ctx.moveTo(path[0][0], path[0][1]);
+                    for (let i = 1; i < path.length; i++) {
+                        ctx.lineTo(path[i][0], path[i][1]);
+                    }
+                    ctx.stroke();
+                });
             }
             
             // 初始化Canvas
@@ -306,6 +363,9 @@
                 } else {
                     [lastX, lastY] = [e.touches[0].clientX - rect.left, e.touches[0].clientY - rect.top];
                 }
+                currentPath = [[lastX, lastY]];
+                paths.push(currentPath);
+                undoStack = []; // 开始新的绘制，清空撤销栈
             }
             
             function draw(e) {
@@ -327,6 +387,7 @@
                 ctx.lineTo(x, y);
                 ctx.stroke();
                 [lastX, lastY] = [x, y];
+                currentPath.push([x, y]);
             }
             
             function stopDrawing() {
@@ -347,8 +408,8 @@
             
             // 清除签名
             document.getElementById('clearSignature').addEventListener('click', function() {
-                const { width, height } = canvas.getBoundingClientRect();
-                ctx.clearRect(0, 0, width, height);
+                paths = [];
+                redrawCanvas();
             });
             
             // 保存签名
@@ -357,9 +418,36 @@
                 // 这里可以将dataURL保存到服务器或本地
                 alert('签名已保存!');
             });
+            
+            // 撤销
+            document.getElementById('undoSignature').addEventListener('click', function() {
+                if (paths.length > 0) {
+                    undoStack.push(paths.pop());
+                    redrawCanvas();
+                }
+            });
+            
+            // 重做
+            document.getElementById('redoSignature').addEventListener('click', function() {
+                if (undoStack.length > 0) {
+                    paths.push(undoStack.pop());
+                    redrawCanvas();
+                }
+            });
 
             // 保存为PDF
             function saveAsPDF() {
+                // 创建加载动画
+                const loadingOverlay = document.createElement('div');
+                loadingOverlay.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-50';
+                loadingOverlay.innerHTML = `
+                    <div class="bg-white p-6 rounded-lg shadow-lg flex items-center">
+                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mr-4"></div>
+                        <p class="text-lg font-medium text-gray-800">正在生成PDF，请稍候...</p>
+                    </div>
+                `;
+                document.body.appendChild(loadingOverlay);
+                
                 html2canvas(document.querySelector('.card-shadow'), {
                     scale: 2,
                     useCORS: true,
@@ -377,11 +465,25 @@
                     
                     pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
                     pdf.save('XX曝光台.pdf');
+                    
+                    // 移除加载动画
+                    document.body.removeChild(loadingOverlay);
                 });
             }
 
             // 保存为图片
             function saveAsImage() {
+                // 创建加载动画
+                const loadingOverlay = document.createElement('div');
+                loadingOverlay.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-50';
+                loadingOverlay.innerHTML = `
+                    <div class="bg-white p-6 rounded-lg shadow-lg flex items-center">
+                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mr-4"></div>
+                        <p class="text-lg font-medium text-gray-800">正在生成图片，请稍候...</p>
+                    </div>
+                `;
+                document.body.appendChild(loadingOverlay);
+                
                 html2canvas(document.querySelector('.card-shadow'), {
                     scale: 2,
                     useCORS: true,
@@ -391,22 +493,33 @@
                     link.download = 'XX曝光台.png';
                     link.href = canvas.toDataURL('image/png');
                     link.click();
+                    
+                    // 移除加载动画
+                    document.body.removeChild(loadingOverlay);
                 });
             }
 
             // 重置所有图片
             function resetAllImages() {
-                for (let i = 1; i <= 9; i++) {
-                    document.getElementById(`image${i}`).src = `https://picsum.photos/seed/photo${i}/300/300`;
-                    document.getElementById(`input${i}`).value = '';
+                if (confirm('确定要重置所有内容吗？此操作不可恢复。')) {
+                    for (let i = 1; i <= 9; i++) {
+                        document.getElementById(`image${i}`).src = `https://picsum.photos/seed/photo${i}/400/600`;
+                        document.getElementById(`input${i}`).value = '';
+                    }
+                    
+                    // 清除签名
+                    paths = [];
+                    redrawCanvas();
+                    
+                    alert('所有内容已重置为默认状态!');
                 }
-                
-                // 清除签名
-                const { width, height } = canvas.getBoundingClientRect();
-                ctx.clearRect(0, 0, width, height);
-                
-                alert('所有内容已重置为默认状态!');
             }
+
+            // 移动端菜单切换
+            document.getElementById('mobileMenuBtn').addEventListener('click', function() {
+                const mobileMenu = document.getElementById('mobileMenu');
+                mobileMenu.classList.toggle('hidden');
+            });
 
             // 绑定导出按钮事件
             document.getElementById('saveAsPDF').addEventListener('click', saveAsPDF);
@@ -417,6 +530,18 @@
             document.getElementById('mobileSaveAsPDF').addEventListener('click', saveAsPDF);
             document.getElementById('mobileSaveAsImage').addEventListener('click', saveAsImage);
             document.getElementById('mobileResetAll').addEventListener('click', resetAllImages);
+            
+            // 滚动时改变导航栏样式
+            window.addEventListener('scroll', function() {
+                const header = document.querySelector('header');
+                if (window.scrollY > 10) {
+                    header.classList.add('py-2');
+                    header.classList.remove('py-4');
+                } else {
+                    header.classList.add('py-4');
+                    header.classList.remove('py-2');
+                }
+            });
         });
     </script>
 </body>
