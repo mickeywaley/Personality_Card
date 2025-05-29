@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XX曝光台</title>
+    <title>XX展示台</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -91,7 +91,7 @@
         <div class="container mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center">
                 <i class="fa fa-eye text-primary text-xl mr-2"></i>
-                <h1 class="text-lg font-bold text-neutral-dark">XX曝光台</h1>
+                <h1 class="text-lg font-bold text-neutral-dark">XX展示台</h1>
             </div>
             <button id="helpButton" class="text-gray-600 hover:text-primary transition-colors">
                 <i class="fa fa-question-circle text-xl"></i>
@@ -103,8 +103,8 @@
     <main class="container mx-auto px-4 py-6">
         <!-- 页面说明 -->
         <div class="mb-6 text-center">
-            <h2 class="text-2xl font-bold text-neutral-dark mb-2">曝光内容管理</h2>
-            <p class="text-gray-600">上传并管理曝光图片，添加签名后生成展示卡</p>
+            <h2 class="text-2xl font-bold text-neutral-dark mb-2">展示内容管理</h2>
+            <p class="text-gray-600">上传并管理展示图片，添加签名后生成展示卡</p>
         </div>
 
         <!-- 截图区域 - 仅包含核心内容 -->
@@ -116,7 +116,7 @@
                     <div class="flex flex-col mb-4 md:mb-0">
                         <div class="flex items-center">
                             <i class="fa fa-eye text-xl mr-2"></i>
-                            <h1 id="editableTitle" class="text-lg md:text-xl font-bold tracking-tight editable-title" contenteditable="true">XX曝光台</h1>
+                            <h1 id="editableTitle" class="text-lg md:text-xl font-bold tracking-tight editable-title" contenteditable="true">XX展示台</h1>
                         </div>
                         <div class="ml-6 mt-1 text-blue-100 text-xs">
                             <span id="subtitle" class="editable-title" contenteditable="true">真相在此，一目了然</span>
@@ -138,7 +138,7 @@
                 </div>
             </div>
             
-            <!-- 曝光卡片区域 -->
+            <!-- 展示卡片区域 -->
             <div class="p-4">
                 <h3 class="text-lg font-semibold text-neutral-dark mb-3 flex items-center">
                     <i class="fa fa-picture-o text-primary mr-2"></i>图片区域
@@ -539,7 +539,7 @@
                     const imgHeight = canvas.height * imgWidth / canvas.width;
                     
                     pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
-                    pdf.save('XX曝光台展示卡.pdf');
+                    pdf.save('XX展示台展示卡.pdf');
                     
                     hideLoading();
                 }).catch(error => {
@@ -561,7 +561,7 @@
                     scrollX: 0
                 }).then(canvas => {
                     const link = document.createElement('a');
-                    link.download = 'XX曝光台展示卡.png';
+                    link.download = 'XX展示台展示卡.png';
                     link.href = canvas.toDataURL('image/png');
                     link.click();
                     
