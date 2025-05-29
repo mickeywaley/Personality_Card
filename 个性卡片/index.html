@@ -346,7 +346,8 @@
             
             generateBtn.addEventListener('click', function() {
                 // 更新预览内容
-                document.getElementById('preview-title').textContent = document.getElementById('name').value || '某某简历';
+                document.getElementById('preview-title').textContent = document.getElementById('resume-title').textContent;
+                document.getElementById('preview-subtitle').textContent = document.getElementById('resume-subtitle').textContent;
                 
                 // 更新所有预览图片
                 document.getElementById('preview-id-photo').src = document.getElementById('id-photo').src;
