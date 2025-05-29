@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商品展示卡</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FF6B00',
+                        secondary: '#36CFC9',
+                        neutral: '#F5F7FA',
+                        dark: '#1D2129',
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .card-shadow {
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
+            }
+            .upload-area {
+                @apply relative border-2 border-dashed border-gray-300 rounded-lg p-6 text-center transition-all duration-300;
+            }
+            .upload-area:hover {
+                @apply border-primary bg-primary/5;
+            }
+            .upload-area.active {
+                @apply border-secondary bg-secondary/5;
+            }
+            .photo-frame {
+                @apply relative rounded-lg overflow-hidden border-2 border-white shadow-md transition-transform duration-300;
+            }
+            .photo-frame:hover {
+                @apply transform scale-[1.02];
+            }
+            .product-feature {
+                @apply flex items-center mb-2 text-sm;
+            }
+            .feature-icon {
+                @apply text-primary mr-2;
+            }
+            .aspect-4-6 {
+                aspect-ratio: 4/6;
+            }
+            .signature-canvas {
+                @apply w-full h-40 bg-white border-2 border-gray-200 rounded-lg cursor-crosshair;
+            }
+            .editable-title {
+                @apply cursor-text transition-all duration-200 hover:bg-primary/5 px-2 rounded;
+            }
+            .editable-title:focus {
+                @apply outline-none bg-primary/10 px-2 rounded;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen font-inter text-dark">
+    <div class="container mx-auto px-4 py-12 max-w-5xl">
+        <!-- 页面标题 -->
+        <h1 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-center mb-8 text-primary">
+            <i class="fa fa-shopping-bag mr-2"></i>商品展示卡生成器
+        </h1>
+
+        <!-- 商品卡主体 -->
+        <div class="bg-white rounded-2xl card-shadow overflow-hidden transition-all duration-500 hover:shadow-xl">
+            <!-- 商品卡头部 -->
+            <div class="bg-gradient-to-r from-primary to-primary/80 text-white p-6 md:p-8 relative">
+                <h2 id="product-title" class="text-[clamp(1.5rem,3vw,2rem)] font-bold mb-2 editable-title" contenteditable="true">高级智能手表</h2>
+                <p id="product-subtitle" class="text-white/80 text-lg editable-title" contenteditable="true">健康监测 · 运动追踪 · 时尚设计</p>
+                
+                <!-- 右上角主图 -->
+                <div class="absolute top-6 right-6 md:top-8 md:right-8 w-24 h-36 md:w-32 md:h-48 rounded-lg overflow-hidden border-2 border-white shadow-lg transition-transform duration-300 hover:scale-105">
+                    <img id="main-photo" src="https://picsum.photos/seed/watch/200/300" alt="商品主图" class="w-full h-full object-cover">
+                    <label for="main-photo-upload" class="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-center justify-center cursor-pointer">
+                        <span class="text-white text-sm"><i class="fa fa-camera mr-1"></i>更换</span>
+                    </label>
+                    <input type="file" id="main-photo-upload" accept="image/*" class="hidden" />
+                </div>
+            </div>
+
+            <!-- 商品卡内容区域 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 p-6 md:p-8">
+                <!-- 左侧区域 - 商品图片 -->
+                <div class="md:col-span-2 space-y-6">
+                    <!-- 商品图片上传 -->
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-semibold text-primary flex items-center">
+                            <i class="fa fa-picture-o mr-2"></i>商品图片
+                        </h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="photo-frame" id="photo-1-frame">
+                                <img id="photo-1" src="https://picsum.photos/seed/watch1/400/600" alt="商品图片1" class="w-full h-full object-cover aspect-4-6">
+                                <label for="photo-1-upload" class="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-center justify-center cursor-pointer">
+                                    <span class="text-white text-sm"><i class="fa fa-camera mr-1"></i>更换</span>
+                                </label>
+                                <input type="file" id="photo-1-upload" accept="image/*" class="hidden" />
+                            </div>
+                            <div class="photo-frame" id="photo-2-frame">
+                                <img id="photo-2" src="https://picsum.photos/seed/watch2/400/600" alt="商品图片2" class="w-full h-full object-cover aspect-4-6">
+                                <label for="photo-2-upload" class="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-center justify-center cursor-pointer">
+                                    <span class="text-white text-sm"><i class="fa fa-camera mr-1"></i>更换</span>
+                                </label>
+                                <input type="file" id="photo-2-upload" accept="image/*" class="hidden" />
+                            </div>
+                            <div class="photo-frame" id="photo-3-frame">
+                                <img id="photo-3" src="https://picsum.photos/seed/watch3/400/600" alt="商品图片3" class="w-full h-full object-cover aspect-4-6">
+                                <label for="photo-3-upload" class="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-center justify-center cursor-pointer">
+                                    <span class="text-white text-sm"><i class="fa fa-camera mr-1"></i>更换</span>
+                                </label>
+                                <input type="file" id="photo-3-upload" accept="image/*" class="hidden" />
+                            </div>
+                            <div class="photo-frame" id="photo-4-frame">
+                                <img id="photo-4" src="https://picsum.photos/seed/watch4/400/600" alt="商品图片4" class="w-full h-full object-cover aspect-4-6">
+                                <label for="photo-4-upload" class="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-center justify-center cursor-pointer">
+                                    <span class="text-white text-sm"><i class="fa fa-camera mr-1"></i>更换</span>
+                                </label>
+                                <input type="file" id="photo-4-upload" accept="image/*" class="hidden" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右侧区域 - 商品信息 -->
+                <div class="md:col-span-1 space-y-6">
+                    <!-- 商品价格 -->
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-semibold text-primary flex items-center">
+                            <i class="fa fa-tag mr-2"></i>商品价格
+                        </h3>
+                        <div class="bg-neutral rounded-lg p-4">
+                            <div class="flex items-baseline">
+                                <span id="price" class="text-2xl font-bold text-primary">¥1,299</span>
+                                <span id="original-price" class="ml-2 text-gray-500 line-through">¥1,599</span>
+                            </div>
+                            <div class="mt-2 flex items-center">
+                                <span class="bg-primary/10 text-primary px-2 py-1 rounded text-xs">限时优惠</span>
+                                <span class="ml-2 text-sm text-gray-600">省¥300</span>
+                            </div>
+                            <div class="mt-3">
+                                <label for="price-input" class="block text-sm font-medium text-gray-700 mb-1">价格</label>
+                                <input type="text" id="price-input" value="1299" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all">
+                            </div>
+                            <div>
+                                <label for="original-price-input" class="block text-sm font-medium text-gray-700 mb-1">原价</label>
+                                <input type="text" id="original-price-input" value="1599" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 商品特性 -->
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-semibold text-primary flex items-center">
+                            <i class="fa fa-tags mr-2"></i>商品特性
+                        </h3>
+                        <div class="bg-neutral rounded-lg p-4">
+                            <div id="features-container" class="space-y-3 min-h-[40px]">
+                                <div class="feature-item">
+                                    <div class="flex items-center">
+                                        <i class="fa fa-check-circle feature-icon"></i>
+                                        <input type="text" value="24小时心率监测" class="flex-1 ml-2 bg-transparent border-b border-gray-300 focus:border-primary focus:outline-none">
+                                        <button type="button" class="ml-2 text-gray-400 hover:text-gray-600 remove-feature">
+                                            <i class="fa fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="feature-item">
+                                    <div class="flex items-center">
+                                        <i class="fa fa-check-circle feature-icon"></i>
+                                        <input type="text" value="睡眠质量分析" class="flex-1 ml-2 bg-transparent border-b border-gray-300 focus:border-primary focus:outline-none">
+                                        <button type="button" class="ml-2 text-gray-400 hover:text-gray-600 remove-feature">
+                                            <i class="fa fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="feature-item">
+                                    <div class="flex items-center">
+                                        <i class="fa fa-check-circle feature-icon"></i>
+                                        <input type="text" value="50米防水" class="flex-1 ml-2 bg-transparent border-b border-gray-300 focus:border-primary focus:outline-none">
+                                        <button type="button" class="ml-2 text-gray-400 hover:text-gray-600 remove-feature">
+                                            <i class="fa fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="feature-item">
+                                    <div class="flex items-center">
+                                        <i class="fa fa-check-circle feature-icon"></i>
+                                        <input type="text" value="长达7天续航" class="flex-1 ml-2 bg-transparent border-b border-gray-300 focus:border-primary focus:outline-none">
+                                        <button type="button" class="ml-2 text-gray-400 hover:text-gray-600 remove-feature">
+                                            <i class="fa fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-3 flex">
+                                <button type="button" id="add-feature" class="w-full px-3 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors flex items-center justify-center">
+                                    <i class="fa fa-plus mr-2"></i>添加商品特性
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 签名区域 -->
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-semibold text-primary flex items-center">
+                            <i class="fa fa-pencil mr-2"></i>签名确认
+                        </h3>
+                        <div class="bg-white rounded-lg overflow-hidden border-2 border-gray-200 shadow-md">
+                            <div class="p-4 flex justify-between items-center bg-gray-50 border-b">
+                                <span class="text-sm text-gray-600">在下方空白区域签名</span>
+                                <div class="flex space-x-2">
+                                    <button type="button" id="clear-signature" class="px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors">
+                                        <i class="fa fa-eraser mr-1"></i>清除
+                                    </button>
+                                    <button type="button" id="save-signature" class="px-3 py-1 text-sm bg-primary text-white rounded hover:bg-primary/90 transition-colors">
+                                        <i class="fa fa-save mr-1"></i>保存
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="p-2">
+                                <canvas id="signature-canvas" class="signature-canvas"></canvas>
+                            </div>
+                            <div class="p-3 bg-gray-50 text-center text-sm text-gray-500">
+                                <i class="fa fa-info-circle mr-1"></i>使用鼠标或触控笔签名
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 商品卡底部 -->
+            <div class="bg-neutral p-6 flex justify-center">
+                <button type="button" id="generate-product-card" class="px-6 py-3 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors shadow-md hover:shadow-lg transform hover:-translate-y-0.5 duration-300 flex items-center">
+                    <i class="fa fa-magic mr-2"></i>生成商品展示卡
+                </button>
+            </div>
+        </div>
+
+        <!-- 商品卡预览模态框 -->
+        <div id="preview-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 opacity-0 pointer-events-none transition-opacity duration-300">
+            <div class="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-auto transform scale-95 transition-transform duration-300">
+                <div class="flex justify-between items-center p-6 border-b">
+                    <h3 class="text-xl font-bold text-primary">商品展示卡预览</h3>
+                    <button id="close-modal" class="text-gray-500 hover:text-gray-700 transition-colors">
+                        <i class="fa fa-times text-xl"></i>
+                    </button>
+                </div>
+                <div class="p-6">
+                    <!-- 预览内容 -->
+                    <div id="product-preview" class="border-2 border-gray-200 rounded-xl overflow-hidden shadow-lg mx-auto max-w-2xl transform transition-transform duration-500 hover:shadow-xl">
+                        <!-- 预览头部 -->
+                        <div class="bg-gradient-to-r from-primary to-primary/80 text-white p-6 relative">
+                            <h2 id="preview-title" class="text-2xl font-bold mb-2">高级智能手表</h2>
+                            <p id="preview-subtitle" class="text-white/80 text-lg">健康监测 · 运动追踪 · 时尚设计</p>
+                            
+                            <!-- 预览主图 -->
+                            <div class="absolute top-6 right-6 w-32 h-48 rounded-lg overflow-hidden border-2 border-white shadow-lg">
+                                <img id="preview-main-photo" src="https://picsum.photos/seed/watch/200/300" alt="商品主图" class="w-full h-full object-cover">
+                            </div>
+                        </div>
+                        
+                        <!-- 预览内容 -->
+                        <div class="p-6">
+                            <!-- 商品图片 -->
+                            <div class="mb-6">
+                                <h3 class="text-lg font-semibold text-primary mb-3 flex items-center">
+                                    <i class="fa fa-picture-o mr-2"></i>商品图片
+                                </h3>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <img id="preview-photo-1" src="https://picsum.photos/seed/watch1/400/600" alt="商品图片1" class="w-full h-full object-cover aspect-4-6 rounded-lg shadow-sm">
+                                    <img id="preview-photo-2" src="https://picsum.photos/seed/watch2/400/600" alt="商品图片2" class="w-full h-full object-cover aspect-4-6 rounded-lg shadow-sm">
+                                    <img id="preview-photo-3" src="https://picsum.photos/seed/watch3/400/600" alt="商品图片3" class="w-full h-full object-cover aspect-4-6 rounded-lg shadow-sm">
+                                    <img id="preview-photo-4" src="https://picsum.photos/seed/watch4/400/600" alt="商品图片4" class="w-full h-full object-cover aspect-4-6 rounded-lg shadow-sm">
+                                </div>
+                            </div>
+                            
+                            <!-- 价格信息 -->
+                            <div class="mb-6">
+                                <h3 class="text-lg font-semibold text-primary mb-3 flex items-center">
+                                    <i class="fa fa-tag mr-2"></i>价格信息
+                                </h3>
+                                <div class="flex items-baseline">
+                                    <span id="preview-price" class="text-3xl font-bold text-primary">¥1,299</span>
+                                    <span id="preview-original-price" class="ml-2 text-gray-500 line-through">¥1,599</span>
+                                </div>
+                                <div class="mt-2 flex items-center">
+                                    <span class="bg-primary/10 text-primary px-2 py-1 rounded text-xs">限时优惠</span>
+                                    <span class="ml-2 text-sm text-gray-600">省¥300</span>
+                                </div>
+                            </div>
+                            
+                            <!-- 商品特性 -->
+                            <div class="mb-6">
+                                <h3 class="text-lg font-semibold text-primary mb-3 flex items-center">
+                                    <i class="fa fa-tags mr-2"></i>商品特性
+                                </h3>
+                                <div id="preview-features" class="space-y-2">
+                                    <div class="product-feature">
+                                        <i class="fa fa-check-circle feature-icon"></i>
+                                        <span>24小时心率监测</span>
+                                    </div>
+                                    <div class="product-feature">
+                                        <i class="fa fa-check-circle feature-icon"></i>
+                                        <span>睡眠质量分析</span>
+                                    </div>
+                                    <div class="product-feature">
+                                        <i class="fa fa-check-circle feature-icon"></i>
+                                        <span>50米防水</span>
+                                    </div>
+                                    <div class="product-feature">
+                                        <i class="fa fa-check-circle feature-icon"></i>
+                                        <span>长达7天续航</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 签名确认 -->
+                            <div>
+                                <h3 class="text-lg font-semibold text-primary mb-3 flex items-center">
+                                    <i class="fa fa-pencil mr-2"></i>签名确认
+                                </h3>
+                                <div class="bg-white rounded-lg overflow-hidden border-2 border-gray-200 shadow-sm">
+                                    <img id="preview-signature" src="https://picsum.photos/seed/signature/600/200" alt="签名" class="w-full h-32 object-contain">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-end p-6 border-t">
+                    <button id="download-product-card" class="px-6 py-3 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors shadow-md hover:shadow-lg transform hover:-translate-y-0.5 duration-300 flex items-center">
+                        <i class="fa fa-download mr-2"></i>下载商品卡
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 所有函数都在DOM加载完成后定义，确保顺序正确
+            
+            // 添加商品特性
+            function addFeature() {
+                // 创建新的特性输入框
+                const featureItem = document.createElement('div');
+                featureItem.className = 'feature-item animate-fadeIn';
+                featureItem.innerHTML = `
+                    <div class="flex items-center">
+                        <i class="fa fa-check-circle feature-icon"></i>
+                        <input type="text" placeholder="输入商品特性" class="flex-1 ml-2 bg-transparent border-b border-gray-300 focus:border-primary focus:outline-none">
+                        <button type="button" class="ml-2 text-gray-400 hover:text-gray-600 remove-feature">
+                            <i class="fa fa-times"></i>
+                        </button>
+                    </div>
+                `;
+                document.getElementById('features-container').appendChild(featureItem);
+                
+                // 添加删除事件
+                featureItem.querySelector('.remove-feature').addEventListener('click', function() {
+                    document.getElementById('features-container').removeChild(featureItem);
+                    updatePreviewFeatures();
+                });
+                
+                // 自动聚焦到新输入框
+                featureItem.querySelector('input').focus();
+            }
+            
+            // 更新预览特性
+            function updatePreviewFeatures() {
+                const featureInputs = document.querySelectorAll('.feature-item input');
+                const previewFeatures = document.getElementById('preview-features');
+                previewFeatures.innerHTML = '';
+                
+                featureInputs.forEach(input => {
+                    const featureText = input.value.trim();
+                    if (featureText) {
+                        const featureElement = document.createElement('div');
+                        featureElement.className = 'product-feature';
+                        featureElement.innerHTML = `
+                            <i class="fa fa-check-circle feature-icon"></i>
+                            <span>${featureText}</span>
+                        `;
+                        previewFeatures.appendChild(featureElement);
+                    }
+                });
+            }
+            
+            // 价格更新
+            function updatePrices() {
+                try {
+                    const priceInput = document.getElementById('price-input');
+                    const originalPriceInput = document.getElementById('original-price-input');
+                    
+                    const price = priceInput.value;
+                    const originalPrice = originalPriceInput.value;
+                    
+                    document.getElementById('price').textContent = `¥${formatNumber(price)}`;
+                    document.getElementById('original-price').textContent = `¥${formatNumber(originalPrice)}`;
+                    document.getElementById('preview-price').textContent = `¥${formatNumber(price)}`;
+                    document.getElementById('preview-original-price').textContent = `¥${formatNumber(originalPrice)}`;
+                    
+                    // 更新节省金额
+                    const saveAmount = parseInt(originalPrice) - parseInt(price);
+                    document.querySelectorAll('.text-gray-600').forEach(el => {
+                        if (el.textContent.includes('省')) {
+                            el.textContent = `省¥${formatNumber(saveAmount)}`;
+                        }
+                    });
+                } catch (error) {
+                    console.error('更新价格时出错:', error);
+                }
+            }
+            
+            function formatNumber(num) {
+                if (!num || isNaN(num)) return '0';
+                return parseInt(num).toLocaleString();
+            }
+            
+            // 签名功能
+            function setupSignature() {
+                const canvas = document.getElementById('signature-canvas');
+                const ctx = canvas.getContext('2d');
+                const previewSignature = document.getElementById('preview-signature');
+                const clearBtn = document.getElementById('clear-signature');
+                const saveBtn = document.getElementById('save-signature');
+                
+                // 设置画布尺寸
+                function resizeCanvas() {
+                    const container = canvas.parentElement;
+                    // 考虑设备像素比，确保签名清晰
+                    const dpr = window.devicePixelRatio || 1;
+                    canvas.width = container.clientWidth * dpr;
+                    canvas.height = 160 * dpr;
+                    canvas.style.width = `${container.clientWidth}px`;
+                    canvas.style.height = '160px';
+                    
+                    // 调整绘图上下文的比例
+                    ctx.scale(dpr, dpr);
+                    
+                    // 如果已有签名，重新绘制
+                    if (window.lastSignature) {
+                        const img = new Image();
+                        img.onload = function() {
+                            ctx.clearRect(0, 0, canvas.width/dpr, canvas.height/dpr);
+                            ctx.drawImage(img, 0, 0, canvas.width/dpr, canvas.height/dpr);
+                        };
+                        img.src = window.lastSignature;
+                    }
+                }
+                
+                resizeCanvas();
+                window.addEventListener('resize', resizeCanvas);
+                
+                // 签名相关变量
+                let isDrawing = false;
+                let lastX = 0;
+                let lastY = 0;
+                window.lastSignature = null;
+                
+                // 设置签名样式 - 黑色粗笔
+                ctx.lineWidth = 4;
+                ctx.lineCap = 'round';
+                ctx.strokeStyle = '#000';
+                
+                // 开始绘制
+                canvas.addEventListener('mousedown', function(e) {
+                    isDrawing = true;
+                    const rect = canvas.getBoundingClientRect();
+                    lastX = e.clientX - rect.left;
+                    lastY = e.clientY - rect.top;
+                });
+                
+                canvas.addEventListener('touchstart', function(e) {
+                    if (e.touches.length === 1) {
+                        const touch = e.touches[0];
+                        const rect = canvas.getBoundingClientRect();
+                        lastX = touch.clientX - rect.left;
+                        lastY = touch.clientY - rect.top;
+                        isDrawing = true;
+                        e.preventDefault(); // 防止滚动
+                    }
+                });
+                
+                // 绘制过程
+                canvas.addEventListener('mousemove', function(e) {
+                    if (!isDrawing) return;
+                    
+                    const rect = canvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(lastX, lastY);
+                    ctx.lineTo(x, y);
+                    ctx.stroke();
+                    
+                    lastX = x;
+                    lastY = y;
+                });
+                
+                canvas.addEventListener('touchmove', function(e) {
+                    if (!isDrawing || e.touches.length !== 1) return;
+                    
+                    const touch = e.touches[0];
+                    const rect = canvas.getBoundingClientRect();
+                    const x = touch.clientX - rect.left;
+                    const y = touch.clientY - rect.top;
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(lastX, lastY);
+                    ctx.lineTo(x, y);
+                    ctx.stroke();
+                    
+                    lastX = x;
+                    lastY = y;
+                    e.preventDefault(); // 防止滚动
+                });
+                
+                // 结束绘制
+                function stopDrawing() {
+                    isDrawing = false;
+                }
+                
+                canvas.addEventListener('mouseup', stopDrawing);
+                canvas.addEventListener('mouseout', stopDrawing);
+                canvas.addEventListener('touchend', stopDrawing);
+                canvas.addEventListener('touchcancel', stopDrawing);
+                
+                // 清除签名
+                clearBtn.addEventListener('click', function() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    window.lastSignature = null;
+                    previewSignature.src = 'https://picsum.photos/seed/signature/600/200';
+                });
+                
+                // 保存签名
+                saveBtn.addEventListener('click', function() {
+                    if (isCanvasEmpty()) {
+                        alert('请先签名再保存');
+                        return;
+                    }
+                    window.lastSignature = canvas.toDataURL('image/png');
+                    previewSignature.src = window.lastSignature;
+                    alert('签名已保存！');
+                });
+                
+                // 检查画布是否为空
+                function isCanvasEmpty() {
+                    const pixelBuffer = new Uint32Array(
+                        ctx.getImageData(0, 0, canvas.width, canvas.height).data.buffer
+                    );
+                    return !pixelBuffer.some(color => color !== 0);
+                }
+            }
+            
+            // 生成商品卡
+            function setupGenerateCard() {
+                const generateBtn = document.getElementById('generate-product-card');
+                const previewModal = document.getElementById('preview-modal');
+                const closeModalBtn = document.getElementById('close-modal');
+                
+                generateBtn.addEventListener('click', function() {
+                    try {
+                        // 更新预览内容
+                        document.getElementById('preview-title').textContent = document.getElementById('product-title').textContent;
+                        document.getElementById('preview-subtitle').textContent = document.getElementById('product-subtitle').textContent;
+                        
+                        // 更新所有预览图片
+                        document.getElementById('preview-main-photo').src = document.getElementById('main-photo').src;
+                        document.getElementById('preview-photo-1').src = document.getElementById('photo-1').src;
+                        document.getElementById('preview-photo-2').src = document.getElementById('photo-2').src;
+                        document.getElementById('preview-photo-3').src = document.getElementById('photo-3').src;
+                        document.getElementById('preview-photo-4').src = document.getElementById('photo-4').src;
+                        
+                        // 如果有签名，更新预览签名
+                        if (window.lastSignature) {
+                            document.getElementById('preview-signature').src = window.lastSignature;
+                        }
+                        
+                        // 更新价格
+                        updatePrices();
+                        
+                        // 更新特性
+                        updatePreviewFeatures();
+                        
+                        // 显示模态框
+                        previewModal.classList.remove('opacity-0', 'pointer-events-none');
+                        previewModal.querySelector('div').classList.remove('scale-95');
+                        previewModal.querySelector('div').classList.add('scale-100');
+                        
+                        // 阻止背景滚动
+                        document.body.style.overflow = 'hidden';
+                    } catch (error) {
+                        console.error('生成商品卡时出错:', error);
+                        alert('生成商品卡时出错，请重试');
+                    }
+                });
+                
+                closeModalBtn.addEventListener('click', function() {
+                    // 隐藏模态框
+                    previewModal.classList.add('opacity-0', 'pointer-events-none');
+                    previewModal.querySelector('div').classList.remove('scale-100');
+                    previewModal.querySelector('div').classList.add('scale-95');
+                    
+                    // 恢复背景滚动
+                    document.body.style.overflow = '';
+                });
+                
+                // 点击模态框背景关闭
+                previewModal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        closeModalBtn.click();
+                    }
+                });
+            }
+            
+            // 下载商品卡
+            function setupDownloadCard() {
+                document.getElementById('download-product-card').addEventListener('click', function() {
+                    try {
+                        downloadProductCard();
+                    } catch (error) {
+                        console.error('下载商品卡时出错:', error);
+                        alert('下载商品卡时出错，请重试');
+                    }
+                });
+            }
+            
+            // 下载商品卡为PDF或图片
+            function downloadProductCard() {
+                const productElement = document.getElementById('product-preview');
+                
+                // 显示加载状态
+                const downloadBtn = document.getElementById('download-product-card');
+                const originalText = downloadBtn.innerHTML;
+                downloadBtn.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i>生成中...';
+                downloadBtn.disabled = true;
+                
+                html2canvas(productElement, {
+                    scale: 2,
+                    useCORS: true,
+                    logging: false
+                }).then(canvas => {
+                    const imgData = canvas.toDataURL('image/png');
+                    
+                    // 创建选项菜单
+                    const optionsMenu = document.createElement('div');
+                    optionsMenu.className = 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-6 rounded-lg shadow-xl z-50 flex flex-col items-center';
+                    optionsMenu.innerHTML = `
+                        <h3 class="text-xl font-bold text-primary mb-4">下载选项</h3>
+                        <div class="flex flex-col space-y-3 w-full">
+                            <button id="download-pdf" class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors flex items-center justify-center">
+                                <i class="fa fa-file-pdf-o mr-2"></i>下载为PDF
+                            </button>
+                            <button id="download-image" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors flex items-center justify-center">
+                                <i class="fa fa-file-image-o mr-2"></i>下载为图片
+                            </button>
+                            <button id="cancel-download" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors flex items-center justify-center">
+                                取消
+                            </button>
+                        </div>
+                    `;
+                    document.body.appendChild(optionsMenu);
+                    
+                    // 下载PDF
+                    document.getElementById('download-pdf').addEventListener('click', function() {
+                        try {
+                            const imgWidth = 210; // A4 width in mm
+                            const imgHeight = canvas.height * imgWidth / canvas.width;
+                            
+                            const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
+                            pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+                            pdf.save('商品展示卡.pdf');
+                        } catch (error) {
+                            console.error('生成PDF时出错:', error);
+                            alert('生成PDF时出错，请重试');
+                        } finally {
+                            document.body.removeChild(optionsMenu);
+                            downloadBtn.innerHTML = originalText;
+                            downloadBtn.disabled = false;
+                        }
+                    });
+                    
+                    // 下载图片
+                    document.getElementById('download-image').addEventListener('click', function() {
+                        try {
+                            const link = document.createElement('a');
+                            link.href = imgData;
+                            link.download = '商品展示卡.png';
+                            link.click();
+                        } catch (error) {
+                            console.error('生成图片时出错:', error);
+                            alert('生成图片时出错，请重试');
+                        } finally {
+                            document.body.removeChild(optionsMenu);
+                            downloadBtn.innerHTML = originalText;
+                            downloadBtn.disabled = false;
+                        }
+                    });
+                    
+                    // 取消下载
+                    document.getElementById('cancel-download').addEventListener('click', function() {
+                        document.body.removeChild(optionsMenu);
+                        downloadBtn.innerHTML = originalText;
+                        downloadBtn.disabled = false;
+                    });
+                }).catch(error => {
+                    console.error('生成图片时出错:', error);
+                    alert('生成图片时出错，请重试');
+                    downloadBtn.innerHTML = originalText;
+                    downloadBtn.disabled = false;
+                });
+            }
+            
+            // 图片上传功能
+            function setupImageUploads() {
+                const uploadInputs = document.querySelectorAll('input[type="file"]');
+                uploadInputs.forEach(input => {
+                    input.addEventListener('change', function(e) {
+                        if (this.files && this.files[0]) {
+                            const reader = new FileReader();
+                            const targetId = this.id.replace('-upload', '');
+                            const targetImg = document.getElementById(targetId);
+                            
+                            reader.onload = function(e) {
+                                if (targetImg) {
+                                    targetImg.src = e.target.result;
+                                    
+                                    // 更新预览图
+                                    const previewId = 'preview-' + targetId;
+                                    const previewImg = document.getElementById(previewId);
+                                    if (previewImg) {
+                                        previewImg.src = e.target.result;
+                                    }
+                                }
+                            }
+                            
+                            reader.readAsDataURL(this.files[0]);
+                        }
+                    });
+                });
+            }
+            
+            // 设置页面功能
+            try {
+                // 设置图片上传
+                setupImageUploads();
+                
+                // 设置添加特性按钮
+                document.getElementById('add-feature').addEventListener('click', addFeature);
+                
+                // 设置特性输入监听
+                document.addEventListener('input', function(e) {
+                    if (e.target.closest('.feature-item input')) {
+                        updatePreviewFeatures();
+                    }
+                });
+                
+                // 设置价格输入监听
+                document.getElementById('price-input').addEventListener('input', updatePrices);
+                document.getElementById('original-price-input').addEventListener('input', updatePrices);
+                
+                // 设置签名功能
+                setupSignature();
+                
+                // 设置生成商品卡
+                setupGenerateCard();
+                
+                // 设置下载功能
+                setupDownloadCard();
+                
+                // 添加淡入动画
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes fadeIn {
+                        from { opacity: 0; transform: translateY(10px); }
+                        to { opacity: 1; transform: translateY(0); }
+                    }
+                    .animate-fadeIn {
+                        animation: fadeIn 0.3s ease-out forwards;
+                    }
+                `;
+                document.head.appendChild(style);
+                
+                // 初始更新预览
+                updatePrices();
+                updatePreviewFeatures();
+            } catch (error) {
+                console.error('初始化页面时出错:', error);
+                alert('页面加载时出错，请刷新页面重试');
+            }
+        });
+    </script>
+</body>
+</html>    
