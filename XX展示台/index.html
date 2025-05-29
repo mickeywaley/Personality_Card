@@ -6,8 +6,6 @@
     <title>XX展示台</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -34,11 +32,11 @@
             .content-auto {
                 content-visibility: auto;
             }
-            .photo-container {
-                aspect-ratio: 4/6;
-            }
             .card-shadow {
                 box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            }
+            .photo-container {
+                aspect-ratio: 4/6; /* 修改为4:6比例 */
             }
             .upload-overlay {
                 opacity: 0;
@@ -53,7 +51,7 @@
             .grid-container {
                 display: grid;
                 grid-template-columns: repeat(3, 1fr);
-                gap: 1rem;
+                gap: 1.5rem;
             }
             .btn-hover-effect {
                 transition: transform 0.2s, box-shadow 0.2s;
@@ -68,25 +66,11 @@
             .scale-on-hover:hover {
                 transform: scale(1.02);
             }
-            .editable-title {
-                border-bottom: 2px solid transparent;
-                transition: border-color 0.3s ease;
-            }
-            .editable-title:focus {
-                outline: none;
-                border-bottom-color: #3B82F6;
-            }
-            .mobile-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            .preview-shadow {
-                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            }
         }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen font-sans">
-    <!-- 顶部导航栏 - 移动端优化 -->
+    <!-- 顶部导航栏 -->
     <header class="bg-white shadow-sm sticky top-0 z-40">
         <div class="container mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center">
@@ -99,7 +83,7 @@
         </div>
     </header>
 
-    <!-- 页面内容 -->
+    <!-- 主内容区域 -->
     <main class="container mx-auto px-4 py-6">
         <!-- 页面说明 -->
         <div class="mb-6 text-center">
@@ -107,8 +91,8 @@
             <p class="text-gray-600">上传并管理展示图片，添加签名后生成展示卡</p>
         </div>
 
-        <!-- 截图区域 - 仅包含核心内容 -->
-        <div id="screenshotArea" class="bg-white rounded-2xl overflow-hidden card-shadow mb-8 scale-on-hover">
+        <!-- 横向卡片布局 -->
+        <div id="exposureCard" class="bg-white rounded-2xl overflow-hidden card-shadow mb-8 scale-on-hover">
             <!-- 顶部标题栏 -->
             <div class="bg-gradient-to-r from-primary to-secondary text-white p-5">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
@@ -119,7 +103,7 @@
                             <h1 id="editableTitle" class="text-lg md:text-xl font-bold tracking-tight editable-title" contenteditable="true">XX展示台</h1>
                         </div>
                         <div class="ml-6 mt-1 text-blue-100 text-xs">
-                            <span id="subtitle" class="editable-title" contenteditable="true">真相在此，一目了然</span>
+                            <span id="subtitle" class="editable-title" contenteditable="true">精彩内容，一目了然</span>
                         </div>
                     </div>
                     
@@ -138,130 +122,133 @@
                 </div>
             </div>
             
-            <!-- 展示卡片区域 -->
+            <!-- 九宫格图片区域 -->
             <div class="p-4">
                 <h3 class="text-lg font-semibold text-neutral-dark mb-3 flex items-center">
-                    <i class="fa fa-picture-o text-primary mr-2"></i>图片区域
+                    <i class="fa fa-picture-o text-primary mr-2"></i>展示图片
                 </h3>
-                <div id="photoGrid" class="grid-container md:grid-cols-3 sm:mobile-grid">
-                    <!-- 九宫格图片区域 - 响应式优化 -->
+                <div class="grid-container">
+                    <!-- 九宫格图片 -->
                     <div class="photo-wrapper relative">
-                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
-                            <img id="image1" src="https://picsum.photos/seed/photo1/400/600" alt="图片1" class="w-full h-full object-cover">
+                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border border-gray-200 hover:border-primary transition-all duration-300"> <!-- 修改边框宽度为1px -->
+                            <img id="image1" src="https://picsum.photos/seed/img1/400/600" alt="图片1" class="w-full h-full object-cover">
                             <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
-                                <label for="input1" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-3 py-1 rounded-lg transition-all duration-300 flex items-center text-sm">
+                                <label for="imageInput1" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-3 py-1 rounded-lg transition-all duration-300 flex items-center text-sm">
                                     <i class="fa fa-upload mr-1"></i>更换
                                 </label>
-                                <input type="file" id="input1" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image1')">
+                                <input type="file" id="imageInput1" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image1')">
                             </div>
                         </div>
                     </div>
                     
                     <div class="photo-wrapper relative">
-                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
-                            <img id="image2" src="https://picsum.photos/seed/photo2/400/600" alt="图片2" class="w-full h-full object-cover">
+                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border border-gray-200 hover:border-primary transition-all duration-300"> <!-- 修改边框宽度为1px -->
+                            <img id="image2" src="https://picsum.photos/seed/img2/400/600" alt="图片2" class="w-full h-full object-cover">
                             <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
-                                <label for="input2" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-3 py-1 rounded-lg transition-all duration-300 flex items-center text-sm">
+                                <label for="imageInput2" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-3 py-1 rounded-lg transition-all duration-300 flex items-center text-sm">
                                     <i class="fa fa-upload mr-1"></i>更换
                                 </label>
-                                <input type="file" id="input2" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image2')">
+                                <input type="file" id="imageInput2" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image2')">
                             </div>
                         </div>
                     </div>
                     
                     <div class="photo-wrapper relative">
-                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
-                            <img id="image3" src="https://picsum.photos/seed/photo3/400/600" alt="图片3" class="w-full h-full object-cover">
+                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border border-gray-200 hover:border-primary transition-all duration-300"> <!-- 修改边框宽度为1px -->
+                            <img id="image3" src="https://picsum.photos/seed/img3/400/600" alt="图片3" class="w-full h-full object-cover">
                             <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
-                                <label for="input3" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-3 py-1 rounded-lg transition-all duration-300 flex items-center text-sm">
+                                <label for="imageInput3" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-3 py-1 rounded-lg transition-all duration-300 flex items-center text-sm">
                                     <i class="fa fa-upload mr-1"></i>更换
                                 </label>
-                                <input type="file" id="input3" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image3')">
+                                <input type="file" id="imageInput3" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image3')">
                             </div>
                         </div>
                     </div>
                     
                     <div class="photo-wrapper relative">
-                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
-                            <img id="image4" src="https://picsum.photos/seed/photo4/400/600" alt="图片4" class="w-full h-full object-cover">
+                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border border-gray-200 hover:border-primary transition-all duration-300"> <!-- 修改边框宽度为1px -->
+                            <img id="image4" src="https://picsum.photos/seed/img4/400/600" alt="图片4" class="w-full h-full object-cover">
                             <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
-                                <label for="input4" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-3 py-1 rounded-lg transition-all duration-300 flex items-center text-sm">
+                                <label for="imageInput4" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-3 py-1 rounded-lg transition-all duration-300 flex items-center text-sm">
                                     <i class="fa fa-upload mr-1"></i>更换
                                 </label>
-                                <input type="file" id="input4" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image4')">
+                                <input type="file" id="imageInput4" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image4')">
                             </div>
                         </div>
                     </div>
                     
                     <div class="photo-wrapper relative">
-                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
-                            <img id="image5" src="https://picsum.photos/seed/photo5/400/600" alt="图片5" class="w-full h-full object-cover">
+                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border border-gray-200 hover:border-primary transition-all duration-300"> <!-- 修改边框宽度为1px -->
+                            <img id="image5" src="https://picsum.photos/seed/img5/400/600" alt="图片5" class="w-full h-full object-cover">
                             <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
-                                <label for="input5" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-3 py-1 rounded-lg transition-all duration-300 flex items-center text-sm">
+                                <label for="imageInput5" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-3 py-1 rounded-lg transition-all duration-300 flex items-center text-sm">
                                     <i class="fa fa-upload mr-1"></i>更换
                                 </label>
-                                <input type="file" id="input5" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image5')">
+                                <input type="file" id="imageInput5" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image5')">
                             </div>
                         </div>
                     </div>
                     
                     <div class="photo-wrapper relative">
-                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
-                            <img id="image6" src="https://picsum.photos/seed/photo6/400/600" alt="图片6" class="w-full h-full object-cover">
+                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border border-gray-200 hover:border-primary transition-all duration-300"> <!-- 修改边框宽度为1px -->
+                            <img id="image6" src="https://picsum.photos/seed/img6/400/600" alt="图片6" class="w-full h-full object-cover">
                             <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
-                                <label for="input6" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-3 py-1 rounded-lg transition-all duration-300 flex items-center text-sm">
+                                <label for="imageInput6" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-3 py-1 rounded-lg transition-all duration-300 flex items-center text-sm">
                                     <i class="fa fa-upload mr-1"></i>更换
                                 </label>
-                                <input type="file" id="input6" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image6')">
+                                <input type="file" id="imageInput6" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image6')">
                             </div>
                         </div>
                     </div>
                     
                     <div class="photo-wrapper relative">
-                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
-                            <img id="image7" src="https://picsum.photos/seed/photo7/400/600" alt="图片7" class="w-full h-full object-cover">
+                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border border-gray-200 hover:border-primary transition-all duration-300"> <!-- 修改边框宽度为1px -->
+                            <img id="image7" src="https://picsum.photos/seed/img7/400/600" alt="图片7" class="w-full h-full object-cover">
                             <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
-                                <label for="input7" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-3 py-1 rounded-lg transition-all duration-300 flex items-center text-sm">
+                                <label for="imageInput7" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-3 py-1 rounded-lg transition-all duration-300 flex items-center text-sm">
                                     <i class="fa fa-upload mr-1"></i>更换
                                 </label>
-                                <input type="file" id="input7" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image7')">
+                                <input type="file" id="imageInput7" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image7')">
                             </div>
                         </div>
                     </div>
                     
                     <div class="photo-wrapper relative">
-                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
-                            <img id="image8" src="https://picsum.photos/seed/photo8/400/600" alt="图片8" class="w-full h-full object-cover">
+                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border border-gray-200 hover:border-primary transition-all duration-300"> <!-- 修改边框宽度为1px -->
+                            <img id="image8" src="https://picsum.photos/seed/img8/400/600" alt="图片8" class="w-full h-full object-cover">
                             <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
-                                <label for="input8" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-3 py-1 rounded-lg transition-all duration-300 flex items-center text-sm">
+                                <label for="imageInput8" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-3 py-1 rounded-lg transition-all duration-300 flex items-center text-sm">
                                     <i class="fa fa-upload mr-1"></i>更换
                                 </label>
-                                <input type="file" id="input8" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image8')">
+                                <input type="file" id="imageInput8" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image8')">
                             </div>
                         </div>
                     </div>
                     
                     <div class="photo-wrapper relative">
-                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
-                            <img id="image9" src="https://picsum.photos/seed/photo9/400/600" alt="图片9" class="w-full h-full object-cover">
+                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border border-gray-200 hover:border-primary transition-all duration-300"> <!-- 修改边框宽度为1px -->
+                            <img id="image9" src="https://picsum.photos/seed/img9/400/600" alt="图片9" class="w-full h-full object-cover">
                             <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
-                                <label for="input9" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-3 py-1 rounded-lg transition-all duration-300 flex items-center text-sm">
+                                <label for="imageInput9" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-3 py-1 rounded-lg transition-all duration-300 flex items-center text-sm">
                                     <i class="fa fa-upload mr-1"></i>更换
                                 </label>
-                                <input type="file" id="input9" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image9')">
+                                <input type="file" id="imageInput9" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image9')">
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-
+            
             <!-- 签名区域 -->
             <div class="p-4 border-t border-gray-100">
                 <h3 class="text-lg font-semibold text-neutral-dark mb-3 flex items-center">
                     <i class="fa fa-signature text-primary mr-2"></i>签名区
                 </h3>
                 <div class="border-2 border-gray-200 rounded-xl p-2 bg-gray-50 shadow-inner">
-                    <canvas id="signatureCanvas" class="w-full h-40 bg-white rounded-lg signature-pad" touch-action="none"></canvas>
+                    <div id="signatureContainer" class="relative">
+                        <canvas id="signatureCanvas" class="w-full h-40 bg-white rounded-lg signature-pad" touch-action="none"></canvas>
+                        <img id="savedSignature" src="" alt="已保存签名" class="absolute inset-0 w-full h-full hidden">
+                    </div>
                     <div class="flex justify-between items-center mt-2 px-2">
                         <button id="clearSignature" class="text-sm text-danger hover:text-danger/80 transition-colors flex items-center">
                             <i class="fa fa-eraser mr-1"></i>清除
@@ -276,16 +263,21 @@
                         </div>
                     </div>
                 </div>
+                <div class="mt-3">
+                    <button id="saveSignature" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+                        <i class="fa fa-check mr-1"></i>保存签名
+                    </button>
+                </div>
             </div>
         </div>
-
+        
         <!-- 生成展示卡按钮 -->
         <div class="flex justify-center mb-8">
             <button id="generateCard" class="bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-lg transition-all duration-300 flex items-center btn-hover-effect text-lg">
                 <i class="fa fa-magic mr-2"></i>生成展示卡
             </button>
         </div>
-
+        
         <!-- 展示卡预览区域 -->
         <div id="previewSection" class="mb-8 hidden">
             <h3 class="text-xl font-bold text-neutral-dark mb-4 text-center">展示卡预览</h3>
@@ -317,7 +309,7 @@
             <div class="space-y-4 text-gray-700">
                 <div>
                     <h4 class="font-semibold text-neutral-dark mb-2">1. 上传图片</h4>
-                    <p>点击任意图片区域，选择本地图片上传。最多可上传9张图片。</p>
+                    <p>点击任意图片区域，选择本地图片上传。每张图片都可以单独替换。</p>
                 </div>
                 <div>
                     <h4 class="font-semibold text-neutral-dark mb-2">2. 编辑标题</h4>
@@ -325,7 +317,7 @@
                 </div>
                 <div>
                     <h4 class="font-semibold text-neutral-dark mb-2">3. 签名</h4>
-                    <p>在签名区域使用鼠标或手指绘制签名，支持撤销和重做操作。</p>
+                    <p>在签名区域使用鼠标或手指绘制签名，支持撤销和重做操作。完成后点击保存签名。</p>
                 </div>
                 <div>
                     <h4 class="font-semibold text-neutral-dark mb-2">4. 生成展示卡</h4>
@@ -348,6 +340,10 @@
     </div>
 
     <script>
+        // 引入html2canvas和jspdf库
+        document.write('<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"><\/script>');
+        document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"><\/script>');
+
         // 图片上传处理
         function handleImageUpload(input, targetId) {
             if (input.files && input.files[0]) {
@@ -362,6 +358,7 @@
         // 签名功能实现
         document.addEventListener('DOMContentLoaded', function() {
             const canvas = document.getElementById('signatureCanvas');
+            const savedSignature = document.getElementById('savedSignature');
             const ctx = canvas.getContext('2d');
             let isDrawing = false;
             let lastX = 0;
@@ -373,7 +370,6 @@
             // 设置Canvas尺寸
             function resizeCanvas() {
                 const { width, height } = canvas.getBoundingClientRect();
-                // 考虑设备像素比以获得清晰的线条
                 const dpr = window.devicePixelRatio || 1;
                 canvas.width = width * dpr;
                 canvas.height = height * dpr;
@@ -405,6 +401,12 @@
             
             // 鼠标/触摸事件处理
             function startDrawing(e) {
+                // 如果已经保存了签名，先清除
+                if (savedSignature.src) {
+                    savedSignature.src = '';
+                    savedSignature.classList.add('hidden');
+                }
+                
                 isDrawing = true;
                 const rect = canvas.getBoundingClientRect();
                 if (e.type === 'mousedown') {
@@ -426,7 +428,7 @@
                     x = e.clientX - rect.left;
                     y = e.clientY - rect.top;
                 } else {
-                    e.preventDefault(); // 防止触摸滚动
+                    e.preventDefault();
                     x = e.touches[0].clientX - rect.left;
                     y = e.touches[0].clientY - rect.top;
                 }
@@ -440,7 +442,9 @@
             }
             
             function stopDrawing() {
-                isDrawing = false;
+                if (isDrawing) {
+                    isDrawing = false;
+                }
             }
             
             // 绑定鼠标事件
@@ -460,6 +464,8 @@
                 paths = [];
                 undoStack = [];
                 redrawCanvas();
+                savedSignature.src = '';
+                savedSignature.classList.add('hidden');
             });
             
             // 撤销
@@ -477,26 +483,37 @@
                     redrawCanvas();
                 }
             });
-
+            
+            // 保存签名
+            document.getElementById('saveSignature').addEventListener('click', function() {
+                if (paths.length === 0) {
+                    alert('请先完成签名！');
+                    return;
+                }
+                
+                // 保存签名为图片
+                savedSignature.src = canvas.toDataURL('image/png');
+                savedSignature.classList.remove('hidden');
+                
+                // 禁用Canvas绘制
+                canvas.style.pointerEvents = 'none';
+                
+                alert('签名已保存！');
+            });
+            
             // 生成展示卡
             document.getElementById('generateCard').addEventListener('click', function() {
                 showLoading();
                 
-                // 延迟执行以显示加载动画
                 setTimeout(function() {
-                    // 显示预览区域
                     const previewSection = document.getElementById('previewSection');
                     previewSection.classList.remove('hidden');
                     
-                    // 复制截图区域内容到预览
-                    const screenshotArea = document.getElementById('screenshotArea');
+                    const exposureCard = document.getElementById('exposureCard');
                     const cardPreview = document.getElementById('cardPreview');
                     
-                    // 清空预览区域
                     cardPreview.innerHTML = '';
-                    
-                    // 复制截图区域内容
-                    cardPreview.appendChild(screenshotArea.cloneNode(true));
+                    cardPreview.appendChild(exposureCard.cloneNode(true));
                     
                     // 隐藏预览区域中的上传按钮
                     const uploadOverlays = cardPreview.querySelectorAll('.upload-overlay');
@@ -505,74 +522,86 @@
                     });
                     
                     // 隐藏预览区域中的签名操作按钮
-                    const signatureButtons = cardPreview.querySelectorAll('#clearSignature, #undoSignature, #redoSignature');
+                    const signatureButtons = cardPreview.querySelectorAll('#clearSignature, #undoSignature, #redoSignature, #saveSignature');
                     signatureButtons.forEach(button => {
                         button.style.display = 'none';
                     });
                     
-                    // 平滑滚动到预览区域
-                    previewSection.scrollIntoView({ behavior: 'smooth' });
+                    // 隐藏预览区域中的Canvas，显示保存的签名图片
+                    const previewCanvas = cardPreview.querySelector('#signatureCanvas');
+                    const previewSavedSignature = cardPreview.querySelector('#savedSignature');
+                    if (previewCanvas && previewSavedSignature) {
+                        previewCanvas.style.display = 'none';
+                        previewSavedSignature.style.position = 'static';
+                    }
                     
+                    previewSection.scrollIntoView({ behavior: 'smooth' });
                     hideLoading();
                 }, 500);
             });
-
+            
             // 保存为PDF
             document.getElementById('downloadPDF').addEventListener('click', function() {
                 showLoading();
                 
-                html2canvas(document.getElementById('cardPreview'), {
-                    scale: 2,
-                    useCORS: true,
-                    logging: false,
-                    scrollY: 0,
-                    scrollX: 0
-                }).then(canvas => {
-                    const imgData = canvas.toDataURL('image/jpeg', 1.0);
-                    const pdf = new jspdf.jsPDF({
-                        orientation: 'portrait',
-                        unit: 'mm',
-                        format: 'a4'
+                // 等待页面渲染完成
+                setTimeout(() => {
+                    html2canvas(document.getElementById('cardPreview'), {
+                        scale: 2,
+                        useCORS: true,
+                        logging: false,
+                        scrollY: 0,
+                        scrollX: 0
+                    }).then(canvas => {
+                        const imgData = canvas.toDataURL('image/jpeg', 1.0);
+                        const pdf = new jspdf.jsPDF({
+                            orientation: 'portrait',
+                            unit: 'mm',
+                            format: 'a4'
+                        });
+                        
+                        const imgWidth = 210;
+                        const imgHeight = canvas.height * imgWidth / canvas.width;
+                        
+                        pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+                        pdf.save('XX展示台展示卡.pdf');
+                        
+                        hideLoading();
+                    }).catch(error => {
+                        console.error('生成PDF时出错:', error);
+                        alert('生成PDF失败，请重试!');
+                        hideLoading();
                     });
-                    
-                    const imgWidth = 210;
-                    const imgHeight = canvas.height * imgWidth / canvas.width;
-                    
-                    pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
-                    pdf.save('XX展示台展示卡.pdf');
-                    
-                    hideLoading();
-                }).catch(error => {
-                    console.error('生成PDF时出错:', error);
-                    alert('生成PDF失败，请重试!');
-                    hideLoading();
-                });
+                }, 100);
             });
-
+            
             // 保存为图片
             document.getElementById('downloadImage').addEventListener('click', function() {
                 showLoading();
                 
-                html2canvas(document.getElementById('cardPreview'), {
-                    scale: 2,
-                    useCORS: true,
-                    logging: false,
-                    scrollY: 0,
-                    scrollX: 0
-                }).then(canvas => {
-                    const link = document.createElement('a');
-                    link.download = 'XX展示台展示卡.png';
-                    link.href = canvas.toDataURL('image/png');
-                    link.click();
-                    
-                    hideLoading();
-                }).catch(error => {
-                    console.error('生成图片时出错:', error);
-                    alert('生成图片失败，请重试!');
-                    hideLoading();
-                });
+                // 等待页面渲染完成
+                setTimeout(() => {
+                    html2canvas(document.getElementById('cardPreview'), {
+                        scale: 2,
+                        useCORS: true,
+                        logging: false,
+                        scrollY: 0,
+                        scrollX: 0
+                    }).then(canvas => {
+                        const link = document.createElement('a');
+                        link.download = 'XX展示台展示卡.png';
+                        link.href = canvas.toDataURL('image/png');
+                        link.click();
+                        
+                        hideLoading();
+                    }).catch(error => {
+                        console.error('生成图片时出错:', error);
+                        alert('生成图片失败，请重试!');
+                        hideLoading();
+                    });
+                }, 100);
             });
-
+            
             // 显示/隐藏帮助模态框
             document.getElementById('helpButton').addEventListener('click', function() {
                 document.getElementById('helpModal').classList.remove('hidden');
@@ -588,7 +617,7 @@
                     this.classList.add('hidden');
                 }
             });
-
+            
             // 显示/隐藏加载提示
             function showLoading() {
                 document.getElementById('loadingIndicator').classList.remove('hidden');
@@ -597,24 +626,7 @@
             function hideLoading() {
                 document.getElementById('loadingIndicator').classList.add('hidden');
             }
-
-            // 响应式布局优化
-            function checkScreenSize() {
-                const photoGrid = document.getElementById('photoGrid');
-                if (window.innerWidth < 640) {
-                    photoGrid.classList.add('mobile-grid');
-                } else {
-                    photoGrid.classList.remove('mobile-grid');
-                }
-            }
-            
-            // 初始化检查屏幕尺寸
-            checkScreenSize();
-            
-            // 窗口大小改变时重新检查
-            window.addEventListener('resize', checkScreenSize);
         });
     </script>
 </body>
-</html>
-    
+</html>    
