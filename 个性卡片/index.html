@@ -421,6 +421,29 @@
                 }
             `;
             document.head.appendChild(style);
+            
+            // 确保联名位置的图片上传功能正常工作
+            const collaborationUpload = document.getElementById('collaboration-upload');
+            const collaborationImage = document.getElementById('collaboration-image');
+            const previewCollaboration = document.getElementById('preview-collaboration');
+            
+            collaborationUpload.addEventListener('change', function(e) {
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        collaborationImage.src = e.target.result;
+                        previewCollaboration.src = e.target.result;
+                    }
+                    
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
+            
+            // 为联名位置的图片添加点击上传触发
+            collaborationImage.addEventListener('click', function() {
+                collaborationUpload.click();
+            });
         });
     </script>
 </body>
