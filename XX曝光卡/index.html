@@ -68,235 +68,218 @@
             .scale-on-hover:hover {
                 transform: scale(1.02);
             }
+            .editable-title {
+                border-bottom: 2px solid transparent;
+                transition: border-color 0.3s ease;
+            }
+            .editable-title:focus {
+                outline: none;
+                border-bottom-color: #3B82F6;
+            }
         }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen font-sans">
-    <!-- 顶部导航栏 -->
-    <header class="bg-gradient-to-r from-primary to-secondary text-white shadow-lg sticky top-0 z-50 transition-all duration-300">
-        <div class="container mx-auto px-4 py-4">
-            <div class="flex justify-between items-center">
-                <div class="flex items-center">
-                    <i class="fa fa-eye text-2xl mr-3"></i>
-                    <h1 class="text-xl md:text-2xl font-bold tracking-tight">XX曝光台</h1>
+    <!-- 顶部区域 - 不包含按钮 -->
+    <div id="screenshotArea" class="bg-white rounded-2xl overflow-hidden card-shadow mx-4 my-8 scale-on-hover">
+        <!-- 顶部标题栏 -->
+        <div class="bg-gradient-to-r from-primary to-secondary text-white p-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+                <!-- 左上角标题区域 -->
+                <div class="flex flex-col mb-4 md:mb-0">
+                    <div class="flex items-center">
+                        <i class="fa fa-eye text-2xl mr-3"></i>
+                        <h1 id="editableTitle" class="text-xl md:text-2xl font-bold tracking-tight editable-title" contenteditable="true">XX曝光台</h1>
+                    </div>
+                    <div class="ml-7 mt-1 text-blue-100 text-sm">
+                        <span id="subtitle" class="editable-title" contenteditable="true">真相在此，一目了然</span>
+                    </div>
                 </div>
-                <div class="hidden md:flex space-x-3">
-                    <button id="saveAsPDF" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-all duration-300 flex items-center btn-hover-effect">
-                        <i class="fa fa-file-pdf-o mr-2"></i>保存为PDF
-                    </button>
-                    <button id="saveAsImage" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-all duration-300 flex items-center btn-hover-effect">
-                        <i class="fa fa-file-image-o mr-2"></i>保存为图片
-                    </button>
-                    <button id="resetAll" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-all duration-300 flex items-center btn-hover-effect">
-                        <i class="fa fa-refresh mr-2"></i>重置
-                    </button>
+                
+                <!-- 右上角证件照区域 -->
+                <div class="relative">
+                    <div class="w-24 h-32 bg-white/20 rounded-lg overflow-hidden border-2 border-white/30 flex items-center justify-center">
+                        <img id="idPhoto" src="https://picsum.photos/seed/idphoto/300/400" alt="证件照" class="w-full h-full object-cover">
+                        <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
+                            <label for="idPhotoInput" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-2 py-1 rounded-lg transition-all duration-300 flex items-center text-xs">
+                                <i class="fa fa-camera mr-1"></i>更换照片
+                            </label>
+                            <input type="file" id="idPhotoInput" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'idPhoto')">
+                        </div>
+                    </div>
                 </div>
-                <button class="md:hidden text-white text-xl" id="mobileMenuBtn">
-                    <i class="fa fa-bars"></i>
-                </button>
-            </div>
-            
-            <!-- 移动端菜单 -->
-            <div id="mobileMenu" class="md:hidden hidden mt-4 bg-white/10 rounded-lg p-3 space-y-2">
-                <button id="mobileSaveAsPDF" class="w-full bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-all duration-300 flex items-center justify-center btn-hover-effect">
-                    <i class="fa fa-file-pdf-o mr-2"></i>保存为PDF
-                </button>
-                <button id="mobileSaveAsImage" class="w-full bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-all duration-300 flex items-center justify-center btn-hover-effect">
-                    <i class="fa fa-file-image-o mr-2"></i>保存为图片
-                </button>
-                <button id="mobileResetAll" class="w-full bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-all duration-300 flex items-center justify-center btn-hover-effect">
-                    <i class="fa fa-refresh mr-2"></i>重置
-                </button>
             </div>
         </div>
-    </header>
-
-    <main class="container mx-auto px-4 py-8">
+        
         <!-- 页面标题和说明 -->
-        <div class="mb-8 text-center">
-            <h2 class="text-3xl font-bold text-neutral-dark mb-2">曝光内容管理</h2>
-            <p class="text-gray-600 max-w-2xl mx-auto">上传并管理曝光图片，添加签名后可导出为PDF或图片格式</p>
+        <div class="p-6 border-b border-gray-100">
+            <h2 class="text-2xl font-bold text-neutral-dark mb-2">曝光内容管理</h2>
+            <p class="text-gray-600 max-w-2xl">上传并管理曝光图片，添加签名后可导出为PDF或图片格式</p>
         </div>
         
         <!-- 曝光卡片区域 -->
-        <section class="bg-white rounded-2xl overflow-hidden card-shadow mb-8 scale-on-hover">
-            <div class="p-6">
-                <h3 class="text-xl font-semibold text-neutral-dark mb-5 flex items-center">
-                    <i class="fa fa-picture-o text-primary mr-2"></i>图片区域
-                    <span class="ml-2 text-sm font-normal text-gray-500">(点击图片可上传替换)</span>
-                </h3>
-                <div class="grid-container">
-                    <!-- 九宫格图片区域 -->
-                    <div class="photo-wrapper relative">
-                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
-                            <img id="image1" src="https://picsum.photos/seed/photo1/400/600" alt="图片1" class="w-full h-full object-cover">
-                            <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
-                                <label for="input1" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-4 py-2 rounded-lg transition-all duration-300 flex items-center">
-                                    <i class="fa fa-upload mr-2"></i>更换图片
-                                </label>
-                                <input type="file" id="input1" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image1')">
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="photo-wrapper relative">
-                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
-                            <img id="image2" src="https://picsum.photos/seed/photo2/400/600" alt="图片2" class="w-full h-full object-cover">
-                            <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
-                                <label for="input2" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-4 py-2 rounded-lg transition-all duration-300 flex items-center">
-                                    <i class="fa fa-upload mr-2"></i>更换图片
-                                </label>
-                                <input type="file" id="input2" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image2')">
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="photo-wrapper relative">
-                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
-                            <img id="image3" src="https://picsum.photos/seed/photo3/400/600" alt="图片3" class="w-full h-full object-cover">
-                            <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
-                                <label for="input3" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-4 py-2 rounded-lg transition-all duration-300 flex items-center">
-                                    <i class="fa fa-upload mr-2"></i>更换图片
-                                </label>
-                                <input type="file" id="input3" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image3')">
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="photo-wrapper relative">
-                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
-                            <img id="image4" src="https://picsum.photos/seed/photo4/400/600" alt="图片4" class="w-full h-full object-cover">
-                            <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
-                                <label for="input4" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-4 py-2 rounded-lg transition-all duration-300 flex items-center">
-                                    <i class="fa fa-upload mr-2"></i>更换图片
-                                </label>
-                                <input type="file" id="input4" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image4')">
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="photo-wrapper relative">
-                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
-                            <img id="image5" src="https://picsum.photos/seed/photo5/400/600" alt="图片5" class="w-full h-full object-cover">
-                            <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
-                                <label for="input5" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-4 py-2 rounded-lg transition-all duration-300 flex items-center">
-                                    <i class="fa fa-upload mr-2"></i>更换图片
-                                </label>
-                                <input type="file" id="input5" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image5')">
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="photo-wrapper relative">
-                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
-                            <img id="image6" src="https://picsum.photos/seed/photo6/400/600" alt="图片6" class="w-full h-full object-cover">
-                            <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
-                                <label for="input6" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-4 py-2 rounded-lg transition-all duration-300 flex items-center">
-                                    <i class="fa fa-upload mr-2"></i>更换图片
-                                </label>
-                                <input type="file" id="input6" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image6')">
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="photo-wrapper relative">
-                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
-                            <img id="image7" src="https://picsum.photos/seed/photo7/400/600" alt="图片7" class="w-full h-full object-cover">
-                            <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
-                                <label for="input7" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-4 py-2 rounded-lg transition-all duration-300 flex items-center">
-                                    <i class="fa fa-upload mr-2"></i>更换图片
-                                </label>
-                                <input type="file" id="input7" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image7')">
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="photo-wrapper relative">
-                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
-                            <img id="image8" src="https://picsum.photos/seed/photo8/400/600" alt="图片8" class="w-full h-full object-cover">
-                            <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
-                                <label for="input8" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-4 py-2 rounded-lg transition-all duration-300 flex items-center">
-                                    <i class="fa fa-upload mr-2"></i>更换图片
-                                </label>
-                                <input type="file" id="input8" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image8')">
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="photo-wrapper relative">
-                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
-                            <img id="image9" src="https://picsum.photos/seed/photo9/400/600" alt="图片9" class="w-full h-full object-cover">
-                            <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
-                                <label for="input9" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-4 py-2 rounded-lg transition-all duration-300 flex items-center">
-                                    <i class="fa fa-upload mr-2"></i>更换图片
-                                </label>
-                                <input type="file" id="input9" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image9')">
-                            </div>
+        <div class="p-6">
+            <h3 class="text-xl font-semibold text-neutral-dark mb-5 flex items-center">
+                <i class="fa fa-picture-o text-primary mr-2"></i>图片区域
+                <span class="ml-2 text-sm font-normal text-gray-500">(点击图片可上传替换)</span>
+            </h3>
+            <div class="grid-container">
+                <!-- 九宫格图片区域 -->
+                <div class="photo-wrapper relative">
+                    <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
+                        <img id="image1" src="https://picsum.photos/seed/photo1/400/600" alt="图片1" class="w-full h-full object-cover">
+                        <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
+                            <label for="input1" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-4 py-2 rounded-lg transition-all duration-300 flex items-center">
+                                <i class="fa fa-upload mr-2"></i>更换图片
+                            </label>
+                            <input type="file" id="input1" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image1')">
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- 签名区域 -->
-            <div class="p-6 border-t border-gray-100">
-                <div class="flex flex-col md:flex-row md:items-center justify-between mb-4">
-                    <h3 class="text-xl font-semibold text-neutral-dark flex items-center">
-                        <i class="fa fa-signature text-primary mr-2"></i>签名区
-                        <span class="ml-2 text-sm font-normal text-gray-500">(使用鼠标或触摸屏幕签名)</span>
-                    </h3>
-                    <div class="flex space-x-3 mt-3 md:mt-0">
-                        <button id="clearSignature" class="bg-white border border-danger text-danger hover:bg-danger hover:text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center btn-hover-effect">
-                            <i class="fa fa-eraser mr-2"></i>清除
-                        </button>
-                        <button id="saveSignature" class="bg-white border border-success text-success hover:bg-success hover:text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center btn-hover-effect">
-                            <i class="fa fa-check mr-2"></i>保存
-                        </button>
-                    </div>
-                </div>
-                <div class="border-2 border-gray-200 rounded-xl p-2 bg-gray-50 shadow-inner">
-                    <canvas id="signatureCanvas" class="w-full h-52 bg-white rounded-lg signature-pad" touch-action="none"></canvas>
-                    <div class="flex justify-between items-center mt-2 px-2">
-                        <p class="text-sm text-gray-500">在此区域手写签名</p>
-                        <div class="flex space-x-2">
-                            <button id="undoSignature" class="text-gray-500 hover:text-primary transition-colors">
-                                <i class="fa fa-undo"></i> 撤销
-                            </button>
-                            <button id="redoSignature" class="text-gray-500 hover:text-primary transition-colors">
-                                <i class="fa fa-repeat"></i> 重做
-                            </button>
+                
+                <div class="photo-wrapper relative">
+                    <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
+                        <img id="image2" src="https://picsum.photos/seed/photo2/400/600" alt="图片2" class="w-full h-full object-cover">
+                        <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
+                            <label for="input2" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-4 py-2 rounded-lg transition-all duration-300 flex items-center">
+                                <i class="fa fa-upload mr-2"></i>更换图片
+                            </label>
+                            <input type="file" id="input2" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image2')">
                         </div>
                     </div>
                 </div>
-            </div>
-        </section>
-    </main>
-
-    <footer class="bg-gray-800 text-white py-8">
-        <div class="container mx-auto px-4">
-            <div class="flex flex-col md:flex-row justify-between items-center">
-                <div class="mb-4 md:mb-0">
-                    <h2 class="text-xl font-bold flex items-center">
-                        <i class="fa fa-eye mr-2"></i>XX曝光台
-                    </h2>
-                    <p class="text-gray-400 mt-1">真相在此，一目了然</p>
+                
+                <div class="photo-wrapper relative">
+                    <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
+                        <img id="image3" src="https://picsum.photos/seed/photo3/400/600" alt="图片3" class="w-full h-full object-cover">
+                        <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
+                            <label for="input3" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-4 py-2 rounded-lg transition-all duration-300 flex items-center">
+                                <i class="fa fa-upload mr-2"></i>更换图片
+                            </label>
+                            <input type="file" id="input3" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image3')">
+                        </div>
+                    </div>
                 </div>
-                <div class="flex space-x-6">
-                    <a href="#" class="text-gray-400 hover:text-white transition-colors duration-300">
-                        <i class="fa fa-weibo text-xl"></i>
-                    </a>
-                    <a href="#" class="text-gray-400 hover:text-white transition-colors duration-300">
-                        <i class="fa fa-wechat text-xl"></i>
-                    </a>
-                    <a href="#" class="text-gray-400 hover:text-white transition-colors duration-300">
-                        <i class="fa fa-envelope text-xl"></i>
-                    </a>
+                
+                <div class="photo-wrapper relative">
+                    <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
+                        <img id="image4" src="https://picsum.photos/seed/photo4/400/600" alt="图片4" class="w-full h-full object-cover">
+                        <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
+                            <label for="input4" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-4 py-2 rounded-lg transition-all duration-300 flex items-center">
+                                <i class="fa fa-upload mr-2"></i>更换图片
+                            </label>
+                            <input type="file" id="input4" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image4')">
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <div class="border-t border-gray-700 mt-6 pt-6 text-center text-gray-400 text-sm">
-                <p>© 2025 XX曝光台. 保留所有权利.</p>
+                
+                <div class="photo-wrapper relative">
+                    <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
+                        <img id="image5" src="https://picsum.photos/seed/photo5/400/600" alt="图片5" class="w-full h-full object-cover">
+                        <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
+                            <label for="input5" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-4 py-2 rounded-lg transition-all duration-300 flex items-center">
+                                <i class="fa fa-upload mr-2"></i>更换图片
+                            </label>
+                            <input type="file" id="input5" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image5')">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="photo-wrapper relative">
+                    <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
+                        <img id="image6" src="https://picsum.photos/seed/photo6/400/600" alt="图片6" class="w-full h-full object-cover">
+                        <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
+                            <label for="input6" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-4 py-2 rounded-lg transition-all duration-300 flex items-center">
+                                <i class="fa fa-upload mr-2"></i>更换图片
+                            </label>
+                            <input type="file" id="input6" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image6')">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="photo-wrapper relative">
+                    <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
+                        <img id="image7" src="https://picsum.photos/seed/photo7/400/600" alt="图片7" class="w-full h-full object-cover">
+                        <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
+                            <label for="input7" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-4 py-2 rounded-lg transition-all duration-300 flex items-center">
+                                <i class="fa fa-upload mr-2"></i>更换图片
+                            </label>
+                            <input type="file" id="input7" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image7')">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="photo-wrapper relative">
+                    <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
+                        <img id="image8" src="https://picsum.photos/seed/photo8/400/600" alt="图片8" class="w-full h-full object-cover">
+                        <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
+                            <label for="input8" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-4 py-2 rounded-lg transition-all duration-300 flex items-center">
+                                <i class="fa fa-upload mr-2"></i>更换图片
+                            </label>
+                            <input type="file" id="input8" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image8')">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="photo-wrapper relative">
+                    <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
+                        <img id="image9" src="https://picsum.photos/seed/photo9/400/600" alt="图片9" class="w-full h-full object-cover">
+                        <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
+                            <label for="input9" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-4 py-2 rounded-lg transition-all duration-300 flex items-center">
+                                <i class="fa fa-upload mr-2"></i>更换图片
+                            </label>
+                            <input type="file" id="input9" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image9')">
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </footer>
+
+        <!-- 签名区域 -->
+        <div class="p-6 border-t border-gray-100">
+            <div class="flex flex-col md:flex-row md:items-center justify-between mb-4">
+                <h3 class="text-xl font-semibold text-neutral-dark flex items-center">
+                    <i class="fa fa-signature text-primary mr-2"></i>签名区
+                    <span class="ml-2 text-sm font-normal text-gray-500">(使用鼠标或触摸屏幕签名)</span>
+                </h3>
+                <div class="flex space-x-3 mt-3 md:mt-0">
+                    <button id="clearSignature" class="bg-white border border-danger text-danger hover:bg-danger hover:text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center btn-hover-effect">
+                        <i class="fa fa-eraser mr-2"></i>清除
+                    </button>
+                    <button id="saveSignature" class="bg-white border border-success text-success hover:bg-success hover:text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center btn-hover-effect">
+                        <i class="fa fa-check mr-2"></i>保存
+                    </button>
+                </div>
+            </div>
+            <div class="border-2 border-gray-200 rounded-xl p-2 bg-gray-50 shadow-inner">
+                <canvas id="signatureCanvas" class="w-full h-52 bg-white rounded-lg signature-pad" touch-action="none"></canvas>
+                <div class="flex justify-between items-center mt-2 px-2">
+                    <p class="text-sm text-gray-500">在此区域手写签名</p>
+                    <div class="flex space-x-2">
+                        <button id="undoSignature" class="text-gray-500 hover:text-primary transition-colors">
+                            <i class="fa fa-undo"></i> 撤销
+                        </button>
+                        <button id="redoSignature" class="text-gray-500 hover:text-primary transition-colors">
+                            <i class="fa fa-repeat"></i> 重做
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 功能按钮 - 位于截图区域外 -->
+    <div class="container mx-auto px-4 py-4 flex flex-wrap justify-center gap-3">
+        <button id="saveAsPDF" class="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg transition-all duration-300 flex items-center btn-hover-effect">
+            <i class="fa fa-file-pdf-o mr-2"></i>保存为PDF
+        </button>
+        <button id="saveAsImage" class="bg-secondary hover:bg-secondary/90 text-white px-6 py-3 rounded-lg transition-all duration-300 flex items-center btn-hover-effect">
+            <i class="fa fa-file-image-o mr-2"></i>保存为图片
+        </button>
+        <button id="resetAll" class="bg-danger hover:bg-danger/90 text-white px-6 py-3 rounded-lg transition-all duration-300 flex items-center btn-hover-effect">
+            <i class="fa fa-refresh mr-2"></i>重置
+        </button>
+    </div>
 
     <script>
         // 图片上传处理
@@ -448,7 +431,7 @@
                 `;
                 document.body.appendChild(loadingOverlay);
                 
-                html2canvas(document.querySelector('.card-shadow'), {
+                html2canvas(document.getElementById('screenshotArea'), {
                     scale: 2,
                     useCORS: true,
                     logging: false
@@ -484,7 +467,7 @@
                 `;
                 document.body.appendChild(loadingOverlay);
                 
-                html2canvas(document.querySelector('.card-shadow'), {
+                html2canvas(document.getElementById('screenshotArea'), {
                     scale: 2,
                     useCORS: true,
                     logging: false
@@ -507,6 +490,14 @@
                         document.getElementById(`input${i}`).value = '';
                     }
                     
+                    // 重置证件照
+                    document.getElementById('idPhoto').src = 'https://picsum.photos/seed/idphoto/300/400';
+                    document.getElementById('idPhotoInput').value = '';
+                    
+                    // 重置标题
+                    document.getElementById('editableTitle').textContent = 'XX曝光台';
+                    document.getElementById('subtitle').textContent = '真相在此，一目了然';
+                    
                     // 清除签名
                     paths = [];
                     redrawCanvas();
@@ -515,32 +506,22 @@
                 }
             }
 
-            // 移动端菜单切换
-            document.getElementById('mobileMenuBtn').addEventListener('click', function() {
-                const mobileMenu = document.getElementById('mobileMenu');
-                mobileMenu.classList.toggle('hidden');
-            });
-
             // 绑定导出按钮事件
             document.getElementById('saveAsPDF').addEventListener('click', saveAsPDF);
             document.getElementById('saveAsImage').addEventListener('click', saveAsImage);
             document.getElementById('resetAll').addEventListener('click', resetAllImages);
             
-            // 移动端按钮事件
-            document.getElementById('mobileSaveAsPDF').addEventListener('click', saveAsPDF);
-            document.getElementById('mobileSaveAsImage').addEventListener('click', saveAsImage);
-            document.getElementById('mobileResetAll').addEventListener('click', resetAllImages);
+            // 标题编辑功能
+            const editableTitle = document.getElementById('editableTitle');
+            editableTitle.addEventListener('input', function() {
+                // 保持页脚标题同步
+                document.getElementById('footerTitle').textContent = this.textContent;
+            });
             
-            // 滚动时改变导航栏样式
-            window.addEventListener('scroll', function() {
-                const header = document.querySelector('header');
-                if (window.scrollY > 10) {
-                    header.classList.add('py-2');
-                    header.classList.remove('py-4');
-                } else {
-                    header.classList.add('py-4');
-                    header.classList.remove('py-2');
-                }
+            const subtitle = document.getElementById('subtitle');
+            subtitle.addEventListener('input', function() {
+                // 保持页脚副标题同步
+                document.getElementById('footerSubtitle').textContent = this.textContent;
             });
         });
     </script>
