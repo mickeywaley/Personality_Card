@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XX展示台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E40AF',
+                        secondary: '#3B82F6',
+                        accent: '#60A5FA',
+                        neutral: '#F1F5F9',
+                        'neutral-dark': '#334155',
+                        success: '#10B981',
+                        danger: '#EF4444',
+                        warning: '#F59E0B',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .card-shadow {
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            }
+            .photo-container {
+                aspect-ratio: 4/6; /* 修改为4:6比例 */
+            }
+            .upload-overlay {
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+            .photo-wrapper:hover .upload-overlay {
+                opacity: 1;
+            }
+            .signature-pad {
+                touch-action: none;
+            }
+            .grid-container {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 1.5rem;
+            }
+            .btn-hover-effect {
+                transition: transform 0.2s, box-shadow 0.2s;
+            }
+            .btn-hover-effect:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .scale-on-hover {
+                transition: transform 0.3s ease;
+            }
+            .scale-on-hover:hover {
+                transform: scale(1.02);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen font-sans">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-sm sticky top-0 z-40">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center">
+                <i class="fa fa-eye text-primary text-xl mr-2"></i>
+                <h1 class="text-lg font-bold text-neutral-dark">XX展示台</h1>
+            </div>
+            <button id="helpButton" class="text-gray-600 hover:text-primary transition-colors">
+                <i class="fa fa-question-circle text-xl"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- 主内容区域 -->
+    <main class="container mx-auto px-4 py-6">
+        <!-- 页面说明 -->
+        <div class="mb-6 text-center">
+            <h2 class="text-2xl font-bold text-neutral-dark mb-2">展示内容管理</h2>
+            <p class="text-gray-600">上传并管理展示图片，添加签名后生成展示卡</p>
+        </div>
+
+        <!-- 横向卡片布局 -->
+        <div id="exposureCard" class="bg-white rounded-2xl overflow-hidden card-shadow mb-8 scale-on-hover">
+            <!-- 顶部标题栏 -->
+            <div class="bg-gradient-to-r from-primary to-secondary text-white p-5">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+                    <!-- 左上角标题区域 -->
+                    <div class="flex flex-col mb-4 md:mb-0">
+                        <div class="flex items-center">
+                            <i class="fa fa-eye text-xl mr-2"></i>
+                            <h1 id="editableTitle" class="text-lg md:text-xl font-bold tracking-tight editable-title" contenteditable="true">XX展示台</h1>
+                        </div>
+                        <div class="ml-6 mt-1 text-blue-100 text-xs">
+                            <span id="subtitle" class="editable-title" contenteditable="true">精彩内容，一目了然</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 右上角证件照区域 -->
+                    <div class="relative">
+                        <div class="w-20 h-28 bg-white/20 rounded-lg overflow-hidden border-2 border-white/30 flex items-center justify-center">
+                            <img id="idPhoto" src="https://picsum.photos/seed/idphoto/300/400" alt="证件照" class="w-full h-full object-cover">
+                            <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
+                                <label for="idPhotoInput" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-2 py-1 rounded-lg transition-all duration-300 flex items-center text-xs">
+                                    <i class="fa fa-camera mr-1"></i>更换照片
+                                </label>
+                                <input type="file" id="idPhotoInput" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'idPhoto')">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 九宫格图片区域 -->
+            <div class="p-4">
+                <h3 class="text-lg font-semibold text-neutral-dark mb-3 flex items-center">
+                    <i class="fa fa-picture-o text-primary mr-2"></i>展示图片
+                </h3>
+                <div class="grid-container">
+                    <!-- 九宫格图片 -->
+                    <div class="photo-wrapper relative">
+                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
+                            <img id="image1" src="https://picsum.photos/seed/img1/400/600" alt="图片1" class="w-full h-full object-cover">
+                            <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
+                                <label for="imageInput1" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-3 py-1 rounded-lg transition-all duration-300 flex items-center text-sm">
+                                    <i class="fa fa-upload mr-1"></i>更换
+                                </label>
+                                <input type="file" id="imageInput1" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image1')">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="photo-wrapper relative">
+                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
+                            <img id="image2" src="https://picsum.photos/seed/img2/400/600" alt="图片2" class="w-full h-full object-cover">
+                            <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
+                                <label for="imageInput2" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-3 py-1 rounded-lg transition-all duration-300 flex items-center text-sm">
+                                    <i class="fa fa-upload mr-1"></i>更换
+                                </label>
+                                <input type="file" id="imageInput2" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image2')">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="photo-wrapper relative">
+                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
+                            <img id="image3" src="https://picsum.photos/seed/img3/400/600" alt="图片3" class="w-full h-full object-cover">
+                            <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
+                                <label for="imageInput3" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-3 py-1 rounded-lg transition-all duration-300 flex items-center text-sm">
+                                    <i class="fa fa-upload mr-1"></i>更换
+                                </label>
+                                <input type="file" id="imageInput3" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image3')">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="photo-wrapper relative">
+                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
+                            <img id="image4" src="https://picsum.photos/seed/img4/400/600" alt="图片4" class="w-full h-full object-cover">
+                            <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
+                                <label for="imageInput4" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-3 py-1 rounded-lg transition-all duration-300 flex items-center text-sm">
+                                    <i class="fa fa-upload mr-1"></i>更换
+                                </label>
+                                <input type="file" id="imageInput4" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image4')">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="photo-wrapper relative">
+                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
+                            <img id="image5" src="https://picsum.photos/seed/img5/400/600" alt="图片5" class="w-full h-full object-cover">
+                            <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
+                                <label for="imageInput5" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-3 py-1 rounded-lg transition-all duration-300 flex items-center text-sm">
+                                    <i class="fa fa-upload mr-1"></i>更换
+                                </label>
+                                <input type="file" id="imageInput5" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image5')">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="photo-wrapper relative">
+                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
+                            <img id="image6" src="https://picsum.photos/seed/img6/400/600" alt="图片6" class="w-full h-full object-cover">
+                            <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
+                                <label for="imageInput6" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-3 py-1 rounded-lg transition-all duration-300 flex items-center text-sm">
+                                    <i class="fa fa-upload mr-1"></i>更换
+                                </label>
+                                <input type="file" id="imageInput6" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image6')">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="photo-wrapper relative">
+                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
+                            <img id="image7" src="https://picsum.photos/seed/img7/400/600" alt="图片7" class="w-full h-full object-cover">
+                            <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
+                                <label for="imageInput7" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-3 py-1 rounded-lg transition-all duration-300 flex items-center text-sm">
+                                    <i class="fa fa-upload mr-1"></i>更换
+                                </label>
+                                <input type="file" id="imageInput7" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image7')">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="photo-wrapper relative">
+                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
+                            <img id="image8" src="https://picsum.photos/seed/img8/400/600" alt="图片8" class="w-full h-full object-cover">
+                            <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
+                                <label for="imageInput8" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-3 py-1 rounded-lg transition-all duration-300 flex items-center text-sm">
+                                    <i class="fa fa-upload mr-1"></i>更换
+                                </label>
+                                <input type="file" id="imageInput8" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image8')">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="photo-wrapper relative">
+                        <div class="photo-container bg-neutral rounded-xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary transition-all duration-300">
+                            <img id="image9" src="https://picsum.photos/seed/img9/400/600" alt="图片9" class="w-full h-full object-cover">
+                            <div class="upload-overlay absolute inset-0 bg-black/50 flex items-center justify-center">
+                                <label for="imageInput9" class="cursor-pointer text-white bg-primary/80 hover:bg-primary px-3 py-1 rounded-lg transition-all duration-300 flex items-center text-sm">
+                                    <i class="fa fa-upload mr-1"></i>更换
+                                </label>
+                                <input type="file" id="imageInput9" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'image9')">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 签名区域 -->
+            <div class="p-4 border-t border-gray-100">
+                <h3 class="text-lg font-semibold text-neutral-dark mb-3 flex items-center">
+                    <i class="fa fa-signature text-primary mr-2"></i>签名区
+                </h3>
+                <div class="border-2 border-gray-200 rounded-xl p-2 bg-gray-50 shadow-inner">
+                    <div id="signatureContainer" class="relative">
+                        <canvas id="signatureCanvas" class="w-full h-40 bg-white rounded-lg signature-pad" touch-action="none"></canvas>
+                        <img id="savedSignature" src="" alt="已保存签名" class="absolute inset-0 w-full h-full hidden">
+                    </div>
+                    <div class="flex justify-between items-center mt-2 px-2">
+                        <button id="clearSignature" class="text-sm text-danger hover:text-danger/80 transition-colors flex items-center">
+                            <i class="fa fa-eraser mr-1"></i>清除
+                        </button>
+                        <div class="flex space-x-2">
+                            <button id="undoSignature" class="text-sm text-gray-500 hover:text-primary transition-colors">
+                                <i class="fa fa-undo mr-1"></i>撤销
+                            </button>
+                            <button id="redoSignature" class="text-sm text-gray-500 hover:text-primary transition-colors">
+                                <i class="fa fa-repeat mr-1"></i>重做
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <button id="saveSignature" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+                        <i class="fa fa-check mr-1"></i>保存签名
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 生成展示卡按钮 -->
+        <div class="flex justify-center mb-8">
+            <button id="generateCard" class="bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-lg transition-all duration-300 flex items-center btn-hover-effect text-lg">
+                <i class="fa fa-magic mr-2"></i>生成展示卡
+            </button>
+        </div>
+        
+        <!-- 展示卡预览区域 -->
+        <div id="previewSection" class="mb-8 hidden">
+            <h3 class="text-xl font-bold text-neutral-dark mb-4 text-center">展示卡预览</h3>
+            <div class="flex justify-center">
+                <div id="cardPreview" class="bg-white rounded-xl overflow-hidden preview-shadow max-w-md w-full transform transition-all duration-500 hover:scale-[1.01]">
+                    <!-- 这里将通过JavaScript动态生成预览内容 -->
+                </div>
+            </div>
+            <div class="flex justify-center mt-6 space-x-4">
+                <button id="downloadPDF" class="bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-lg transition-all duration-300 flex items-center btn-hover-effect">
+                    <i class="fa fa-file-pdf-o mr-2"></i>保存为PDF
+                </button>
+                <button id="downloadImage" class="bg-secondary hover:bg-secondary/90 text-white px-6 py-2 rounded-lg transition-all duration-300 flex items-center btn-hover-effect">
+                    <i class="fa fa-file-image-o mr-2"></i>保存为图片
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- 帮助模态框 -->
+    <div id="helpModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-neutral-dark">使用帮助</h3>
+                <button id="closeHelp" class="text-gray-500 hover:text-gray-700">
+                    <i class="fa fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="space-y-4 text-gray-700">
+                <div>
+                    <h4 class="font-semibold text-neutral-dark mb-2">1. 上传图片</h4>
+                    <p>点击任意图片区域，选择本地图片上传。每张图片都可以单独替换。</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-neutral-dark mb-2">2. 编辑标题</h4>
+                    <p>点击顶部标题和副标题可以进行编辑，修改为你需要的内容。</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-neutral-dark mb-2">3. 签名</h4>
+                    <p>在签名区域使用鼠标或手指绘制签名，支持撤销和重做操作。完成后点击保存签名。</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-neutral-dark mb-2">4. 生成展示卡</h4>
+                    <p>点击"生成展示卡"按钮，系统将自动生成包含所有内容的展示卡。</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-neutral-dark mb-2">5. 保存</h4>
+                    <p>生成展示卡后，可以选择保存为PDF或图片格式。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 加载提示 -->
+    <div id="loadingIndicator" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white p-6 rounded-lg shadow-lg flex items-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mr-4"></div>
+            <p class="text-lg font-medium text-gray-800">正在处理，请稍候...</p>
+        </div>
+    </div>
+
+    <script>
+        // 引入html2canvas和jspdf库
+        document.write('<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"><\/script>');
+        document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"><\/script>');
+
+        // 图片上传处理
+        function handleImageUpload(input, targetId) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById(targetId).src = e.target.result;
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // 签名功能实现
+        document.addEventListener('DOMContentLoaded', function() {
+            const canvas = document.getElementById('signatureCanvas');
+            const savedSignature = document.getElementById('savedSignature');
+            const ctx = canvas.getContext('2d');
+            let isDrawing = false;
+            let lastX = 0;
+            let lastY = 0;
+            let paths = [];
+            let currentPath = [];
+            let undoStack = [];
+            
+            // 设置Canvas尺寸
+            function resizeCanvas() {
+                const { width, height } = canvas.getBoundingClientRect();
+                const dpr = window.devicePixelRatio || 1;
+                canvas.width = width * dpr;
+                canvas.height = height * dpr;
+                ctx.scale(dpr, dpr);
+                redrawCanvas();
+            }
+            
+            // 重绘Canvas
+            function redrawCanvas() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                paths.forEach(path => {
+                    ctx.beginPath();
+                    ctx.moveTo(path[0][0], path[0][1]);
+                    for (let i = 1; i < path.length; i++) {
+                        ctx.lineTo(path[i][0], path[i][1]);
+                    }
+                    ctx.stroke();
+                });
+            }
+            
+            // 初始化Canvas
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            
+            // 设置绘图样式
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = '#334155';
+            
+            // 鼠标/触摸事件处理
+            function startDrawing(e) {
+                // 如果已经保存了签名，先清除
+                if (savedSignature.src) {
+                    savedSignature.src = '';
+                    savedSignature.classList.add('hidden');
+                }
+                
+                isDrawing = true;
+                const rect = canvas.getBoundingClientRect();
+                if (e.type === 'mousedown') {
+                    [lastX, lastY] = [e.clientX - rect.left, e.clientY - rect.top];
+                } else {
+                    [lastX, lastY] = [e.touches[0].clientX - rect.left, e.touches[0].clientY - rect.top];
+                }
+                currentPath = [[lastX, lastY]];
+                paths.push(currentPath);
+                undoStack = []; // 开始新的绘制，清空撤销栈
+            }
+            
+            function draw(e) {
+                if (!isDrawing) return;
+                const rect = canvas.getBoundingClientRect();
+                let x, y;
+                
+                if (e.type === 'mousemove') {
+                    x = e.clientX - rect.left;
+                    y = e.clientY - rect.top;
+                } else {
+                    e.preventDefault();
+                    x = e.touches[0].clientX - rect.left;
+                    y = e.touches[0].clientY - rect.top;
+                }
+                
+                ctx.beginPath();
+                ctx.moveTo(lastX, lastY);
+                ctx.lineTo(x, y);
+                ctx.stroke();
+                [lastX, lastY] = [x, y];
+                currentPath.push([x, y]);
+            }
+            
+            function stopDrawing() {
+                if (isDrawing) {
+                    isDrawing = false;
+                }
+            }
+            
+            // 绑定鼠标事件
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDrawing);
+            canvas.addEventListener('mouseout', stopDrawing);
+            
+            // 绑定触摸事件
+            canvas.addEventListener('touchstart', startDrawing);
+            canvas.addEventListener('touchmove', draw);
+            canvas.addEventListener('touchend', stopDrawing);
+            canvas.addEventListener('touchcancel', stopDrawing);
+            
+            // 清除签名
+            document.getElementById('clearSignature').addEventListener('click', function() {
+                paths = [];
+                undoStack = [];
+                redrawCanvas();
+                savedSignature.src = '';
+                savedSignature.classList.add('hidden');
+            });
+            
+            // 撤销
+            document.getElementById('undoSignature').addEventListener('click', function() {
+                if (paths.length > 0) {
+                    undoStack.push(paths.pop());
+                    redrawCanvas();
+                }
+            });
+            
+            // 重做
+            document.getElementById('redoSignature').addEventListener('click', function() {
+                if (undoStack.length > 0) {
+                    paths.push(undoStack.pop());
+                    redrawCanvas();
+                }
+            });
+            
+            // 保存签名
+            document.getElementById('saveSignature').addEventListener('click', function() {
+                if (paths.length === 0) {
+                    alert('请先完成签名！');
+                    return;
+                }
+                
+                // 保存签名为图片
+                savedSignature.src = canvas.toDataURL('image/png');
+                savedSignature.classList.remove('hidden');
+                
+                // 禁用Canvas绘制
+                canvas.style.pointerEvents = 'none';
+                
+                alert('签名已保存！');
+            });
+            
+            // 生成展示卡
+            document.getElementById('generateCard').addEventListener('click', function() {
+                showLoading();
+                
+                setTimeout(function() {
+                    const previewSection = document.getElementById('previewSection');
+                    previewSection.classList.remove('hidden');
+                    
+                    const exposureCard = document.getElementById('exposureCard');
+                    const cardPreview = document.getElementById('cardPreview');
+                    
+                    cardPreview.innerHTML = '';
+                    cardPreview.appendChild(exposureCard.cloneNode(true));
+                    
+                    // 隐藏预览区域中的上传按钮
+                    const uploadOverlays = cardPreview.querySelectorAll('.upload-overlay');
+                    uploadOverlays.forEach(overlay => {
+                        overlay.style.display = 'none';
+                    });
+                    
+                    // 隐藏预览区域中的签名操作按钮
+                    const signatureButtons = cardPreview.querySelectorAll('#clearSignature, #undoSignature, #redoSignature, #saveSignature');
+                    signatureButtons.forEach(button => {
+                        button.style.display = 'none';
+                    });
+                    
+                    // 隐藏预览区域中的Canvas，显示保存的签名图片
+                    const previewCanvas = cardPreview.querySelector('#signatureCanvas');
+                    const previewSavedSignature = cardPreview.querySelector('#savedSignature');
+                    if (previewCanvas && previewSavedSignature) {
+                        previewCanvas.style.display = 'none';
+                        previewSavedSignature.style.position = 'static';
+                    }
+                    
+                    previewSection.scrollIntoView({ behavior: 'smooth' });
+                    hideLoading();
+                }, 500);
+            });
+            
+            // 保存为PDF
+            document.getElementById('downloadPDF').addEventListener('click', function() {
+                showLoading();
+                
+                // 等待页面渲染完成
+                setTimeout(() => {
+                    html2canvas(document.getElementById('cardPreview'), {
+                        scale: 2,
+                        useCORS: true,
+                        logging: false,
+                        scrollY: 0,
+                        scrollX: 0
+                    }).then(canvas => {
+                        const imgData = canvas.toDataURL('image/jpeg', 1.0);
+                        const pdf = new jspdf.jsPDF({
+                            orientation: 'portrait',
+                            unit: 'mm',
+                            format: 'a4'
+                        });
+                        
+                        const imgWidth = 210;
+                        const imgHeight = canvas.height * imgWidth / canvas.width;
+                        
+                        pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+                        pdf.save('XX展示台展示卡.pdf');
+                        
+                        hideLoading();
+                    }).catch(error => {
+                        console.error('生成PDF时出错:', error);
+                        alert('生成PDF失败，请重试!');
+                        hideLoading();
+                    });
+                }, 100);
+            });
+            
+            // 保存为图片
+            document.getElementById('downloadImage').addEventListener('click', function() {
+                showLoading();
+                
+                // 等待页面渲染完成
+                setTimeout(() => {
+                    html2canvas(document.getElementById('cardPreview'), {
+                        scale: 2,
+                        useCORS: true,
+                        logging: false,
+                        scrollY: 0,
+                        scrollX: 0
+                    }).then(canvas => {
+                        const link = document.createElement('a');
+                        link.download = 'XX展示台展示卡.png';
+                        link.href = canvas.toDataURL('image/png');
+                        link.click();
+                        
+                        hideLoading();
+                    }).catch(error => {
+                        console.error('生成图片时出错:', error);
+                        alert('生成图片失败，请重试!');
+                        hideLoading();
+                    });
+                }, 100);
+            });
+            
+            // 显示/隐藏帮助模态框
+            document.getElementById('helpButton').addEventListener('click', function() {
+                document.getElementById('helpModal').classList.remove('hidden');
+            });
+            
+            document.getElementById('closeHelp').addEventListener('click', function() {
+                document.getElementById('helpModal').classList.add('hidden');
+            });
+            
+            // 点击模态框外部关闭
+            document.getElementById('helpModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.add('hidden');
+                }
+            });
+            
+            // 显示/隐藏加载提示
+            function showLoading() {
+                document.getElementById('loadingIndicator').classList.remove('hidden');
+            }
+            
+            function hideLoading() {
+                document.getElementById('loadingIndicator').classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>    
