@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XX展示卡</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;600&display=swap">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f2f2f7;
+            margin: 20px;
+            padding: 20px;
+        }
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        .card {
+            width: 100%;
+            max-width: 640px;
+            height: auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            padding-bottom: 16px;
+            transition: all 0.3s ease;
+        }
+        .top-section {
+            padding: 40px;
+            margin-bottom: 24px;
+            background: linear-gradient(to bottom, #f5f5f7, #e8ecef);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 12px;
+            position: relative;
+            box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.05);
+        }
+        .title {
+            width: calc(100% - 120px);
+            padding: 6px;
+            font-size: 48px;
+            font-weight: 600;
+            line-height: 1.4;
+            border: none;
+            border-bottom: 3px solid transparent;
+            transition: border-bottom 0.3s ease;
+            color: #000;
+        }
+        .description {
+            width: calc(100% - 120px);
+            padding: 6px;
+            font-size: 24px;
+            font-weight: 400;
+            line-height: 1.4;
+            border: none;
+            border-bottom: 3px solid transparent;
+            transition: border-bottom 0.3s ease;
+            color: #333;
+        }
+        .title:focus, .description:focus {
+            outline: none;
+            border-bottom: 3px solid #007aff;
+        }
+        .id-photo {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            width: 90px;
+            aspect-ratio: 9 / 16;
+            background-color: #e0e0e0;
+            border-radius: 8px;
+            border: 1px solid #d2d2d7;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            z-index: 10;
+        }
+        .id-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            image-orientation: from-image;
+            transition: opacity 0.3s ease;
+        }
+        .image-url {
+            font-size: 12px;
+            color: #666;
+            word-break: break-all;
+            padding: 4px 0;
+            max-height: 40px;
+            overflow-y: auto;
+            background: #f8f8f8;
+            border-radius: 4px;
+            margin-top: 4px;
+            text-align: center;
+        }
+        .bottom-section {
+            padding: 12px;
+            margin-top: 24px;
+            display: flex;
+            gap: 20px;
+        }
+        .left-images {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+        .left-image {
+            flex: 1;
+            aspect-ratio: 9 / 16;
+            background-color: #e0e0e0;
+            border-radius: 8px;
+            border: 1px solid #d2d2d7;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+        .left-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            image-orientation: from-image;
+            transition: opacity 0.3s ease;
+        }
+        .right-image {
+            flex: 2;
+            aspect-ratio: 9 / 16;
+            background-color: #e0e0e0;
+            border-radius: 8px;
+            border: 1px solid #d2d2d7;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+        .right-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            image-orientation: from-image;
+            transition: opacity 0.3s ease;
+        }
+        .signature-area {
+            height: 160px;
+            padding: 12px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-top: 1px solid #d2d2d7;
+            border-radius: 0 0 12px 12px;
+        }
+        #signatureCanvas {
+            width: 100%;
+            height: 100%;
+            border: 1px solid #dfe1e5;
+            border-radius: 8px;
+            background: #ffffff;
+        }
+        .controls {
+            margin-top: 28px;
+            display: flex;
+            gap: 14px;
+            justify-content: center;
+        }
+        .controls button {
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 500;
+            color: #ffffff;
+            background: #007aff;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+        }
+        .controls button:hover {
+            background: linear-gradient(to bottom, #007aff, #005bb5);
+            box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+        }
+        
+        /* 加载状态样式 */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            z-index: 10;
+        }
+        .image-container.loading .loading-overlay {
+            opacity: 1;
+            visibility: visible;
+        }
+        .loading-spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid #007aff;
+            border-bottom-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 预览区域样式 */
+        .preview-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+        }
+        .preview-header {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .preview-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+        .preview-card {
+            width: 100%;
+            max-width: 640px;
+            height: auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+            overflow: hidden;
+            position: relative;
+        }
+        .preview-card img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        .preview-placeholder {
+            width: 100%;
+            height: 400px;
+            background-color: #f5f5f7;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            color: #666;
+            font-size: 18px;
+        }
+        .preview-placeholder .icon {
+            font-size: 48px;
+            color: #007aff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 编辑区域 -->
+        <div class="edit-section">
+            <div class="card" id="card">
+                <div class="top-section">
+                    <div class="title" contenteditable="true">请输入标题</div>
+                    <div class="description" contenteditable="true">请输入说明</div>
+                    <div class="id-photo image-container" id="id-photo">
+                        <img id="id-photo-img" src="" style="display: none;" 
+                             onerror="this.style.display = 'none';">
+                        <div class="loading-overlay">
+                            <div class="loading-spinner"></div>
+                        </div>
+                        <input type="file" id="id-photo-input" accept="image/*" style="display: none;">
+                        <div class="image-url" id="id-photo-url">未上传图片</div>
+                    </div>
+                </div>
+                <div class="bottom-section">
+                    <div class="left-images">
+                        <div class="left-image image-container" id="left-image1">
+                            <img id="left-image1-img" src="" style="display: none;" 
+                                 onerror="this.style.display = 'none';">
+                            <div class="loading-overlay">
+                                <div class="loading-spinner"></div>
+                            </div>
+                            <input type="file" id="left-image1-input" accept="image/*" style="display: none;">
+                            <div class="image-url" id="left-image1-url">未上传图片</div>
+                        </div>
+                        <div class="left-image image-container" id="left-image2">
+                            <img id="left-image2-img" src="" style="display: none;" 
+                                 onerror="this.style.display = 'none';">
+                            <div class="loading-overlay">
+                                <div class="loading-spinner"></div>
+                            </div>
+                            <input type="file" id="left-image2-input" accept="image/*" style="display: none;">
+                            <div class="image-url" id="left-image2-url">未上传图片</div>
+                        </div>
+                    </div>
+                    <div class="right-image image-container" id="right-image">
+                        <img id="right-image-img" src="" style="display: none;" 
+                             onerror="this.style.display = 'none';">
+                        <div class="loading-overlay">
+                            <div class="loading-spinner"></div>
+                        </div>
+                        <input type="file" id="right-image-input" accept="image/*" style="display: none;">
+                        <div class="image-url" id="right-image-url">未上传图片</div>
+                    </div>
+                </div>
+                <div class="signature-area">
+                    <canvas id="signatureCanvas"></canvas>
+                </div>
+            </div>
+            <div class="controls">
+                <button onclick="clearSignature()">清除签名</button>
+                <button onclick="generatePreview()">生成预览</button>
+                <button onclick="generatePDF()">生成PDF</button>
+                <button onclick="generateImage()">生成图片</button>
+            </div>
+        </div>
+        
+        <!-- 预览区域 -->
+        <div class="preview-section">
+            <div class="preview-header">预览</div>
+            <div class="preview-container">
+                <div class="preview-card" id="previewCard">
+                    <div class="preview-placeholder" id="previewPlaceholder">
+                        <div class="icon">📄</div>
+                        <div>点击"生成预览"按钮查看效果</div>
+                    </div>
+                    <img id="previewImage" src="" style="display: none;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        const { jsPDF } = window.jspdf;
+        let imageWorker = null;
+        let isProcessingImage = false;
+
+        // 初始化Web Worker用于图片处理
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.Worker) {
+                const workerScript = `
+                    self.onmessage = function(e) {
+                        if (e.data.type === 'process-image') {
+                            const { file, maxWidth, maxHeight } = e.data;
+                            const reader = new FileReader();
+                            
+                            reader.onload = async function(e) {
+                                try {
+                                    const byteCharacters = atob(e.target.result.split(',')[1]);
+                                    const byteNumbers = new Array(byteCharacters.length);
+                                    for (let i = 0; i < byteCharacters.length; i++) {
+                                        byteNumbers[i] = byteCharacters.charCodeAt(i);
+                                    }
+                                    const byteArray = new Uint8Array(byteNumbers);
+                                    
+                                    const blob = new Blob([byteArray], { type: 'image/jpeg' });
+                                    const imageBitmap = await createImageBitmap(blob);
+                                    
+                                    let width = imageBitmap.width;
+                                    let height = imageBitmap.height;
+                                    
+                                    if (width > maxWidth) {
+                                        height = height * (maxWidth / width);
+                                        width = maxWidth;
+                                    }
+                                    
+                                    if (height > maxHeight) {
+                                        width = width * (maxHeight / height);
+                                        height = maxHeight;
+                                    }
+                                    
+                                    const canvas = new OffscreenCanvas(width, height);
+                                    const ctx = canvas.getContext('2d');
+                                    
+                                    ctx.drawImage(imageBitmap, 0, 0, width, height);
+                                    
+                                    const newBlob = await canvas.convertToBlob({ type: 'image/jpeg', quality: 0.8 });
+                                    const reader = new FileReader();
+                                    reader.onload = function(e) {
+                                        self.postMessage({
+                                            type: 'image-processed',
+                                            result: e.target.result
+                                        });
+                                    };
+                                    reader.readAsDataURL(newBlob);
+                                } catch (error) {
+                                    self.postMessage({
+                                        type: 'image-error',
+                                        error: error.message || '图片处理失败'
+                                    });
+                                }
+                            };
+                            
+                            reader.onerror = function() {
+                                self.postMessage({
+                                    type: 'image-error',
+                                    error: '图片读取失败'
+                                });
+                            };
+                            
+                            reader.readAsDataURL(file);
+                        }
+                    };
+                `;
+                
+                const blob = new Blob([workerScript], { type: 'application/javascript' });
+                imageWorker = new Worker(URL.createObjectURL(blob));
+            }
+        });
+
+        // 图片上传处理
+        function setupImageUpload(inputId, imgId, containerId, urlId) {
+            const input = document.getElementById(inputId);
+            const img = document.getElementById(imgId);
+            const container = document.getElementById(containerId);
+            const urlDisplay = document.getElementById(urlId);
+
+            container.addEventListener('click', () => {
+                if (!isProcessingImage) input.click();
+            });
+
+            input.addEventListener('change', (e) => {
+                if (isProcessingImage) {
+                    alert('正在处理上一张图片，请稍候...');
+                    input.value = '';
+                    return;
+                }
+                
+                const file = e.target.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    isProcessingImage = true;
+                    container.classList.add('loading');
+                    
+                    const rect = container.getBoundingClientRect();
+                    const maxWidth = rect.width * 2;
+                    const maxHeight = rect.height * 2;
+                    
+                    if (imageWorker) {
+                        imageWorker.onmessage = function(e) {
+                            isProcessingImage = false;
+                            
+                            if (e.data.type === 'image-processed') {
+                                img.src = e.data.result;
+                                img.style.display = 'block';
+                                urlDisplay.textContent = e.data.result;
+                                container.classList.remove('loading');
+                            } else {
+                                alert(`图片处理失败: ${e.data.error}`);
+                                urlDisplay.textContent = '图片处理失败';
+                                container.classList.remove('loading');
+                            }
+                        };
+                        
+                        imageWorker.postMessage({
+                            type: 'process-image',
+                            file: file,
+                            maxWidth: maxWidth,
+                            maxHeight: maxHeight
+                        });
+                    } else {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            isProcessingImage = false;
+                            img.src = e.target.result;
+                            img.style.display = 'block';
+                            urlDisplay.textContent = e.target.result;
+                            container.classList.remove('loading');
+                        };
+                        reader.onerror = function() {
+                            isProcessingImage = false;
+                            alert('图片读取失败，请选择有效的图片文件。');
+                            urlDisplay.textContent = '图片读取失败';
+                            container.classList.remove('loading');
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                } else {
+                    alert('请选择有效的图片文件。');
+                    urlDisplay.textContent = '无效的图片文件';
+                }
+            });
+        }
+
+        setupImageUpload('id-photo-input', 'id-photo-img', 'id-photo', 'id-photo-url');
+        setupImageUpload('left-image1-input', 'left-image1-img', 'left-image1', 'left-image1-url');
+        setupImageUpload('left-image2-input', 'left-image2-img', 'left-image2', 'left-image2-url');
+        setupImageUpload('right-image-input', 'right-image-img', 'right-image', 'right-image-url');
+
+        // 手写签名
+        const canvas = document.getElementById('signatureCanvas');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+
+        function resizeCanvas() {
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = '#000';
+        }
+        
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // 鼠标事件
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+
+        // 触摸事件
+        canvas.addEventListener('touchstart', function(e) {
+            const touch = e.touches[0];
+            const rect = canvas.getBoundingClientRect();
+            startDrawing({
+                offsetX: touch.clientX - rect.left,
+                offsetY: touch.clientY - rect.top
+            });
+            e.preventDefault();
+        });
+        
+        canvas.addEventListener('touchmove', function(e) {
+            const touch = e.touches[0];
+            const rect = canvas.getBoundingClientRect();
+            draw({
+                offsetX: touch.clientX - rect.left,
+                offsetY: touch.clientY - rect.top
+            });
+            e.preventDefault();
+        });
+        
+        canvas.addEventListener('touchend', stopDrawing);
+
+        function startDrawing(e) {
+            isDrawing = true;
+            [lastX, lastY] = [e.offsetX, e.offsetY];
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            
+            ctx.lineTo(e.offsetX, e.offsetY);
+            ctx.stroke();
+            [lastX, lastY] = [e.offsetX, e.offsetY];
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+        }
+
+        function clearSignature() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // 生成预览图
+        function generatePreview() {
+            if (isProcessingImage) {
+                alert('正在处理图片，请稍候...');
+                return;
+            }
+            
+            const card = document.getElementById('card');
+            const previewImage = document.getElementById('previewImage');
+            const previewPlaceholder = document.getElementById('previewPlaceholder');
+            
+            // 显示加载状态
+            previewPlaceholder.innerHTML = `
+                <div class="loading-spinner"></div>
+                <div>正在生成预览...</div>
+            `;
+            previewPlaceholder.style.display = 'flex';
+            previewImage.style.display = 'none';
+            
+            html2canvas(card, { 
+                scale: 3,
+                useCORS: true,
+                logging: false,
+                backgroundColor: null,
+                ignoreElements: (element) => {
+                    return element.classList.contains('loading');
+                }
+            }).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                previewImage.src = imgData;
+                previewImage.style.display = 'block';
+                previewPlaceholder.style.display = 'none';
+            }).catch(error => {
+                console.error('预览生成失败:', error);
+                alert(`预览生成失败: ${error.message}`);
+                previewPlaceholder.innerHTML = `
+                    <div class="icon">❌</div>
+                    <div>预览生成失败，请重试</div>
+                `;
+            });
+        }
+
+        // 生成PDF
+        function generatePDF() {
+            if (isProcessingImage) {
+                alert('正在处理图片，请稍候...');
+                return;
+            }
+            
+            const card = document.getElementById('card');
+            const originalOpacity = card.style.opacity;
+            card.style.opacity = '0.7';
+            
+            // 创建加载指示器
+            const loadingIndicator = document.createElement('div');
+            loadingIndicator.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background-color: rgba(255, 255, 255, 0.9);
+                padding: 20px;
+                border-radius: 10px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                z-index: 1000;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            `;
+            
+            const spinner = document.createElement('div');
+            spinner.style.cssText = `
+                width: 24px;
+                height: 24px;
+                border: 3px solid #007aff;
+                border-bottom-color: transparent;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                margin-bottom: 10px;
+            `;
+            
+            const text = document.createElement('span');
+            text.textContent = '正在生成PDF...';
+            
+            loadingIndicator.appendChild(spinner);
+            loadingIndicator.appendChild(text);
+            document.body.appendChild(loadingIndicator);
+            
+            html2canvas(card, { 
+                scale: 3,
+                useCORS: true,
+                logging: false,
+                backgroundColor: null,
+                ignoreElements: (element) => {
+                    return element.classList.contains('loading');
+                },
+                delay: 500
+            }).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'mm',
+                    format: [card.offsetWidth * 0.264583, card.offsetHeight * 0.264583]
+                });
+                pdf.addImage(imgData, 'PNG', 0, 0, card.offsetWidth * 0.264583, card.offsetHeight * 0.264583);
+                pdf.save('展示卡.pdf');
+                card.style.opacity = originalOpacity;
+                document.body.removeChild(loadingIndicator);
+            }).catch(error => {
+                console.error('PDF生成失败:', error);
+                alert(`PDF生成失败: ${error.message}`);
+                card.style.opacity = originalOpacity;
+                document.body.removeChild(loadingIndicator);
+            });
+        }
+
+        // 生成图片
+        function generateImage() {
+            if (isProcessingImage) {
+                alert('正在处理图片，请稍候...');
+                return;
+            }
+            
+            const card = document.getElementById('card');
+            const originalOpacity = card.style.opacity;
+            card.style.opacity = '0.7';
+            
+            html2canvas(card, { 
+                scale: 3,
+                useCORS: true,
+                logging: false,
+                backgroundColor: null,
+                ignoreElements: (element) => {
+                    return element.classList.contains('loading');
+                }
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.href = canvas.toDataURL('image/png');
+                link.download = '展示卡.png';
+                link.click();
+                card.style.opacity = originalOpacity;
+            }).catch(error => {
+                console.error('图片生成失败:', error);
+                alert(`图片生成失败: ${error.message}`);
+                card.style.opacity = originalOpacity;
+            });
+        }
+    </script>
+</body>
+</html>
