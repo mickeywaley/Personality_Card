@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学生卡生成器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e40af',
+                        secondary: '#3b82f6',
+                        accent: '#93c5fd',
+                        neutral: '#f3f4f6',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .card-shadow {
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            }
+            .photo-border {
+                border: 2px dashed #e5e7eb;
+            }
+            .editable {
+                min-height: 1.5rem;
+                outline: none;
+            }
+            .signature-area {
+                border: 1px solid #e5e7eb;
+                border-radius: 0.25rem;
+            }
+            .a4-container {
+                width: 210mm;
+                min-height: 297mm;
+                padding: 15mm;
+            }
+            @media print {
+                body * {
+                    visibility: hidden;
+                }
+                .a4-container, .a4-container * {
+                    visibility: visible;
+                }
+                .a4-container {
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                    margin: 0;
+                    box-shadow: none;
+                }
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
+    <div class="w-full max-w-3xl bg-white rounded-xl overflow-hidden card-shadow p-6 mb-6">
+        <h1 class="text-2xl font-bold text-center text-primary mb-6">学生卡生成器</h1>
+        
+        <div class="a4-container bg-white mx-auto card-shadow mb-6 relative">
+            <!-- 顶部标题区域 -->
+            <header class="p-6 border-b-2 border-gray-200">
+                <h1 id="school-name" class="text-[clamp(2rem,5vw,3rem)] font-bold text-center editable" contenteditable="true">xx学院</h1>
+            </header>
+
+            <!-- 中间内容区域 -->
+            <main class="flex-1 p-6">
+                <div class="mb-6">
+                    <h2 id="card-title" class="text-[clamp(1.5rem,3vw,2rem)] font-bold text-center text-primary mb-6 editable" contenteditable="true">学生卡</h2>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- 左边特写 -->
+                        <div class="flex flex-col items-center justify-center">
+                            <div class="w-full aspect-[9/19] rounded-lg overflow-hidden photo-border bg-neutral mb-2 relative group cursor-pointer">
+                                <img id="profile-pic" src="https://picsum.photos/seed/student1/400/800" alt="学生照片" class="w-full h-full object-cover">
+                                <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <label for="profile-upload" class="text-white cursor-pointer text-center">
+                                        <i class="fa fa-camera text-3xl"></i>
+                                        <span class="block mt-2">上传照片</span>
+                                    </label>
+                                </div>
+                                <input type="file" id="profile-upload" accept="image/*" class="hidden" onchange="loadImage(this, 'profile-pic')">
+                            </div>
+                            <p class="text-sm text-gray-600 editable" contenteditable="true">个人特写</p>
+                        </div>
+                        
+                        <!-- 中间风采展示 -->
+                        <div class="flex flex-col items-center justify-center">
+                            <div class="w-full aspect-[9/19] rounded-lg overflow-hidden photo-border bg-neutral mb-2 relative group cursor-pointer">
+                                <img id="feature-pic" src="https://picsum.photos/seed/student2/400/800" alt="学生风采照" class="w-full h-full object-cover">
+                                <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <label for="feature-upload" class="text-white cursor-pointer text-center">
+                                        <i class="fa fa-camera text-3xl"></i>
+                                        <span class="block mt-2">上传照片</span>
+                                    </label>
+                                </div>
+                                <input type="file" id="feature-upload" accept="image/*" class="hidden" onchange="loadImage(this, 'feature-pic')">
+                            </div>
+                            <p class="text-sm text-gray-600 editable" contenteditable="true">风采展示</p>
+                        </div>
+                        
+                        <!-- 右边个人信息 -->
+                        <div class="flex flex-col justify-between">
+                            <div class="space-y-4 p-4 bg-gray-50 rounded-lg">
+                                <div class="flex items-center">
+                                    <span class="w-1/3 text-gray-600 font-medium">姓名</span>
+                                    <span id="name" class="w-2/3 font-medium editable text-lg" contenteditable="true">张三</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="w-1/3 text-gray-600 font-medium">编号</span>
+                                    <span id="id" class="w-2/3 font-medium editable" contenteditable="true">2023001</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="w-1/3 text-gray-600 font-medium">身高</span>
+                                    <span id="height" class="w-2/3 font-medium editable" contenteditable="true">175cm</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="w-1/3 text-gray-600 font-medium">体重</span>
+                                    <span id="weight" class="w-2/3 font-medium editable" contenteditable="true">65kg</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="w-1/3 text-gray-600 font-medium">专业</span>
+                                    <span id="major" class="w-2/3 font-medium editable" contenteditable="true">计算机科学</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="w-1/3 text-gray-600 font-medium">鞋码</span>
+                                    <span id="shoe-size" class="w-2/3 font-medium editable" contenteditable="true">42</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="w-1/3 text-gray-600 font-medium">尺寸</span>
+                                    <span id="cloth-size" class="w-2/3 font-medium editable" contenteditable="true">M</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- 底部备注区域 -->
+            <footer class="p-6 bg-neutral rounded-b-lg">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- 左边备注和TG账号 -->
+                    <div class="flex flex-col justify-between">
+                        <div>
+                            <h3 class="font-bold text-gray-800 mb-1 text-sm editable" contenteditable="true">备注信息</h3>
+                            <p id="hobbies" class="text-gray-600 text-sm editable mb-2" contenteditable="true">兴趣爱好：阅读、编程、篮球</p>
+                        </div>
+                        <div class="mt-2">
+                            <div class="bg-white p-3 rounded-lg shadow-sm">
+                                <div class="flex items-center justify-start">
+                                    <i class="fa fa-telegram text-primary text-xl mr-2"></i>
+                                    <span class="font-bold text-gray-800 text-sm editable" contenteditable="true">TG账号</span>
+                                </div>
+                                <p id="telegram" class="text-gray-600 text-sm editable mt-1" contenteditable="true">@zhangsan</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 中间身份证照片（横向4:6） -->
+                    <div class="flex flex-col items-center justify-center">
+                        <div class="w-full aspect-[6/4] rounded-lg overflow-hidden photo-border bg-neutral mb-2 relative group cursor-pointer">
+                            <img id="id-pic" src="https://picsum.photos/seed/idcard/600/400" alt="身份证照片" class="w-full h-full object-cover">
+                            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <label for="id-upload" class="text-white cursor-pointer text-center">
+                                    <i class="fa fa-camera text-3xl"></i>
+                                    <span class="block mt-2">上传照片</span>
+                                </label>
+                            </div>
+                            <input type="file" id="id-upload" accept="image/*" class="hidden" onchange="loadImage(this, 'id-pic')">
+                        </div>
+                        <p class="text-sm text-gray-600 editable" contenteditable="true">身份证照片</p>
+                    </div>
+                    
+                    <!-- 右边手写签名 -->
+                    <div>
+                        <h3 class="font-bold text-gray-800 mb-2 text-lg editable" contenteditable="true">手写签名</h3>
+                        <div id="signature-container" class="mb-3">
+                            <div id="signature-pad" class="h-32 signature-area w-full bg-white cursor-pointer"></div>
+                            <div class="flex justify-between mt-2 text-sm text-gray-500">
+                                <span id="signature-status">未签名</span>
+                                <button id="clear-signature" class="text-red-500 hover:text-red-700 transition-colors">
+                                    <i class="fa fa-eraser mr-1"></i> 清除
+                                </button>
+                            </div>
+                        </div>
+                        <div class="flex justify-end space-x-2">
+                            <button id="save-signature" class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded transition-colors">
+                                <i class="fa fa-save mr-1"></i> 保存签名
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        </div>
+        
+        <div class="flex justify-center space-x-4">
+            <button id="generate-pdf" class="bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-lg transition-all duration-300 flex items-center text-lg">
+                <i class="fa fa-file-pdf-o mr-2"></i> 导出PDF
+            </button>
+            <button id="generate-image" class="bg-secondary hover:bg-secondary/90 text-white px-8 py-3 rounded-lg transition-all duration-300 flex items-center text-lg">
+                <i class="fa fa-file-image-o mr-2"></i> 导出图片
+            </button>
+            <button id="print-card" class="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg transition-all duration-300 flex items-center text-lg">
+                <i class="fa fa-print mr-2"></i> 打印卡片
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let signatureCanvas = null;
+        let signatureCtx = null;
+        let isSigning = false;
+        let signatureSaved = false;
+        let lastX = 0;
+        let lastY = 0;
+        let points = []; // 存储签名点，用于优化线条
+        
+        // 加载上传的图片
+        function loadImage(input, targetId) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById(targetId).src = e.target.result;
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // 初始化签名画布
+        function initSignaturePad() {
+            const container = document.getElementById('signature-pad');
+            if (signatureCanvas) {
+                container.removeChild(signatureCanvas);
+            }
+            
+            signatureCanvas = document.createElement('canvas');
+            signatureCanvas.width = container.offsetWidth;
+            signatureCanvas.height = container.offsetHeight;
+            container.appendChild(signatureCanvas);
+            signatureCtx = signatureCanvas.getContext('2d');
+            signatureCtx.strokeStyle = '#000';
+            signatureCtx.lineWidth = 2;
+            signatureCtx.lineCap = 'round';
+            signatureCtx.lineJoin = 'round'; // 新增：优化线条连接
+            
+            // 阻止画布上的默认触摸行为
+            container.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+            }, { passive: false });
+            
+            container.addEventListener('touchmove', function(e) {
+                e.preventDefault();
+            }, { passive: false });
+            
+            // 绑定签名事件
+            signatureCanvas.addEventListener('mousedown', startDrawing);
+            signatureCanvas.addEventListener('mousemove', draw);
+            signatureCanvas.addEventListener('mouseup', stopDrawing);
+            signatureCanvas.addEventListener('mouseout', stopDrawing);
+            
+            // 移动端支持
+            signatureCanvas.addEventListener('touchstart', startDrawing);
+            signatureCanvas.addEventListener('touchmove', draw);
+            signatureCanvas.addEventListener('touchend', stopDrawing);
+            
+            // 重置状态
+            isSigning = false;
+            signatureSaved = false;
+            points = []; // 清空点数组
+            document.getElementById('signature-status').textContent = '未签名';
+            document.getElementById('signature-status').className = 'text-gray-500';
+        }
+
+        // 开始签名
+        function startDrawing(e) {
+            e.preventDefault();
+            isSigning = true;
+            
+            const rect = signatureCanvas.getBoundingClientRect();
+            const x = (e.clientX || e.touches[0].clientX) - rect.left;
+            const y = (e.clientY || e.touches[0].clientY) - rect.top;
+            
+            lastX = x;
+            lastY = y;
+            points = [{x, y}]; // 初始化点数组
+            
+            signatureCtx.beginPath();
+            signatureCtx.moveTo(x, y);
+        }
+        
+        // 绘制签名 - 优化版本
+        function draw(e) {
+            e.preventDefault();
+            if (!isSigning) return;
+            
+            const rect = signatureCanvas.getBoundingClientRect();
+            const x = (e.clientX || e.touches[0].clientX) - rect.left;
+            const y = (e.clientY || e.touches[0].clientY) - rect.top;
+            
+            // 添加新点到数组
+            points.push({x, y});
+            
+            // 保持最近的5个点用于平滑处理
+            if (points.length > 5) {
+                points.shift();
+            }
+            
+            // 使用贝塞尔曲线使线条更流畅
+            signatureCtx.beginPath();
+            
+            // 如果有足够的点，使用曲线连接
+            if (points.length >= 3) {
+                // 计算控制点和终点
+                const p0 = points[0];
+                const p1 = points[1];
+                const p2 = points[2];
+                
+                // 从当前位置开始
+                signatureCtx.moveTo(p0.x, p0.y);
+                
+                // 使用贝塞尔曲线连接
+                signatureCtx.bezierCurveTo(
+                    p0.x, p0.y,
+                    p1.x, p1.y,
+                    p2.x, p2.y
+                );
+                
+                // 绘制到最新点
+                signatureCtx.lineTo(x, y);
+            } else {
+                // 点不足时，简单连接
+                signatureCtx.moveTo(lastX, lastY);
+                signatureCtx.lineTo(x, y);
+            }
+            
+            signatureCtx.stroke();
+            
+            lastX = x;
+            lastY = y;
+            
+            // 更新状态
+            document.getElementById('signature-status').textContent = '签名中...';
+            document.getElementById('signature-status').className = 'text-blue-500';
+        }
+        
+        // 停止签名
+        function stopDrawing() {
+            if (isSigning) {
+                isSigning = false;
+                signatureCtx.closePath();
+                points = []; // 清空点数组
+                
+                // 检查是否有签名
+                const imageData = signatureCtx.getImageData(0, 0, signatureCanvas.width, signatureCanvas.height);
+                const hasSignature = imageData.data.some((value, index) => index % 4 === 3 && value > 0);
+                
+                if (hasSignature) {
+                    document.getElementById('signature-status').textContent = '已签名（未保存）';
+                    document.getElementById('signature-status').className = 'text-yellow-500';
+                } else {
+                    document.getElementById('signature-status').textContent = '未签名';
+                    document.getElementById('signature-status').className = 'text-gray-500';
+                }
+            }
+        }
+
+        // 保存签名
+        document.getElementById('save-signature').addEventListener('click', function() {
+            // 检查是否有签名
+            const imageData = signatureCtx.getImageData(0, 0, signatureCanvas.width, signatureCanvas.height);
+            const hasSignature = imageData.data.some((value, index) => index % 4 === 3 && value > 0);
+            
+            if (!hasSignature) {
+                alert('请先完成签名');
+                return;
+            }
+            
+            // 保存签名
+            signatureSaved = true;
+            document.getElementById('signature-status').textContent = '已保存签名';
+            document.getElementById('signature-status').className = 'text-green-500';
+            
+            // 禁用保存按钮
+            this.disabled = true;
+            this.className = 'bg-gray-400 text-white px-4 py-2 rounded cursor-not-allowed';
+        });
+
+        // 清除签名
+        document.getElementById('clear-signature').addEventListener('click', function() {
+            if (signatureCtx) {
+                signatureCtx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+                document.getElementById('signature-status').textContent = '未签名';
+                document.getElementById('signature-status').className = 'text-gray-500';
+                signatureSaved = false;
+                points = []; // 清空点数组
+                
+                // 启用保存按钮
+                const saveBtn = document.getElementById('save-signature');
+                saveBtn.disabled = false;
+                saveBtn.className = 'bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded transition-colors';
+            }
+        });
+
+        // 导出为PDF
+        document.getElementById('generate-pdf').addEventListener('click', function() {
+            // 检查是否已保存签名
+            if (!signatureSaved) {
+                if (!confirm('签名尚未保存，是否继续导出？')) {
+                    return;
+                }
+            }
+            
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('portrait', 'mm', 'a4'); // 使用纵向模式
+            
+            html2canvas(document.querySelector('.a4-container'), {
+                scale: 2,
+                useCORS: true,
+                logging: false
+            }).then(canvas => {
+                const imgData = canvas.toDataURL('image/jpeg', 1.0);
+                const imgWidth = 210; // A4宽度
+                const imgHeight = canvas.height * imgWidth / canvas.width;
+                
+                doc.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+                doc.save('学生卡.pdf');
+            });
+        });
+
+        // 导出为图片
+        document.getElementById('generate-image').addEventListener('click', function() {
+            // 检查是否已保存签名
+            if (!signatureSaved) {
+                if (!confirm('签名尚未保存，是否继续导出？')) {
+                    return;
+                }
+            }
+            
+            html2canvas(document.querySelector('.a4-container'), {
+                scale: 2,
+                useCORS: true,
+                logging: false
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = '学生卡.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        });
+
+        // 打印卡片
+        document.getElementById('print-card').addEventListener('click', function() {
+            // 检查是否已保存签名
+            if (!signatureSaved) {
+                if (!confirm('签名尚未保存，是否继续打印？')) {
+                    return;
+                }
+            }
+            
+            window.print();
+        });
+
+        // 为所有可编辑元素添加焦点样式
+        document.querySelectorAll('.editable').forEach(el => {
+            el.addEventListener('focus', function() {
+                this.classList.add('bg-yellow-50', 'px-2', 'rounded');
+            });
+            el.addEventListener('blur', function() {
+                this.classList.remove('bg-yellow-50', 'px-2', 'rounded');
+            });
+        });
+
+        // 页面加载时初始化签名画布
+        window.addEventListener('load', initSignaturePad);
+        
+        // 窗口大小改变时重新初始化签名画布
+        window.addEventListener('resize', function() {
+            if (signatureCanvas) {
+                initSignaturePad();
+            }
+        });
+    </script>
+</body>
+</html>
