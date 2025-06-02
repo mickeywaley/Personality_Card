@@ -2,14 +2,16 @@
 
 个性卡片生成
 
-<img src="图片地址" alt="Mobile wallpaper"   />
+<img src="[图片地址](https://raw.githubusercontent.com/mickeywaley/Personality_Card/81f1450e5030ab393090318ced8a49580ed2f627/XX%E4%BF%A1%E6%81%AF%E5%8D%A1/1.png)" alt="Mobile wallpaper"   />
 
-<img src="图片地址" alt="Mobile wallpaper"   />
-
-
+<img src="[图片地址](https://raw.githubusercontent.com/mickeywaley/Personality_Card/81f1450e5030ab393090318ced8a49580ed2f627/XX%E4%BF%A1%E6%81%AF%E5%8D%A1/2.png)" alt="Mobile wallpaper"   />
 
 
+----------------------------
 
+在线信息卡生成演示：
+
+https://www.doubao.com/share/code/d8307ff189721380
 
 
 ----------------------------
